@@ -1,0 +1,157 @@
+@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;900&display=swap");
+.Navigation-Main-Container {
+  /* width: 100%; */
+  /* width: 200px; */
+  height: 100%;
+}
+
+.NavigationSidebar {
+  background-color: #6e00ff;
+  /* width: 9%; */
+  /* width: 7%; */
+  width: 120px;
+  /* width: 14%; */
+  height: 100%;
+  border-radius: 25px;
+}
+
+.MyProfile {
+  border: 4px solid #5322bc;
+  border-radius: 50%;
+  height: 82px;
+  width: 82px;
+  cursor: pointer;
+}
+
+.NavigationBarContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 30px;
+  height: 100%;
+}
+
+.Navigation-Routes {
+  margin-top: 54px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.Navigation-Route-Bottom {
+  position: absolute;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  bottom: 60px;
+  height: 100px;
+  cursor: pointer;
+}
+
+.Navigation-Route {
+  cursor: pointer;
+  width: 100%;
+  height: 100px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#selected {
+  background-color: #612dd1e5;
+  box-shadow: -7px 0px 0px #f3b559 inset;
+}
+
+.MainLayout {
+  display: flex;
+  height: 100%;
+  width: 100%;
+}
+
+.MessagesMain {
+  /* background-color: gray; */
+  width: 100%;
+}
+
+.main-container {
+  background-color: #ffffff;
+  border-radius: 25px;
+  box-shadow: 0px 4px 5px 2px rgba(121, 197, 239, 0.38);
+  /* margin-left: 40px; */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.titletext {
+  font-family: "Roboto", sans-serif;
+  font-size: 70px;
+  /* margin: 20px; */
+}
+
+.subtitletext {
+  font-family: "Roboto", sans-serif;
+  font-size: 50px;
+  text-align: center;
+}
+
+/* Responsive */
+
+.responsive-navbar {
+  display: none;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+.responsive-navbar-menus {
+  font-family: "Roboto", sans-serif;
+  width: 90%;
+  height: 70%;
+  background-color: #5322bc;
+  border-top-right-radius: 10px;
+  border-bottom-right-radius: 15px;
+  /* display: none; */
+}
+
+.responsive-navbar-menu {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 30px;
+  cursor: pointer;
+  /* padding-top: 20px; */
+  color: rgb(0, 0, 0);
+  background-color: rgb(255, 255, 255);
+  align-items: center;
+  justify-content: center;
+  margin-top: 10px;
+  border-radius: 20px;
+}
+
+.medium-padding {
+  padding: 20px;
+}
+
+@media only screen and (max-width: 320px) {
+  .Navigation-Main-Container {
+    display: none;
+  }
+
+  .main-container {
+    margin: 0;
+  }
+
+  .responsive-navbar {
+    display: block;
+    position: absolute;
+  }
+}
+
+/* End of Responsive */

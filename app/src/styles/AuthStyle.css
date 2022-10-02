@@ -1,0 +1,101 @@
+@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;900&display=swap");
+
+.Auth-Container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  /* padding: 53px; */
+  /* background-color: #EFF6FC; */
+}
+
+.Auth-Main {
+  /* width: 42%;
+    height: 90%; */
+  width: 500px;
+  height: 800px;
+  /* background-color: #6e00ff; */
+  background-color: white;
+  border-radius: 20px;
+  text-align: center;
+  box-shadow: 0px 0px 5px rgba(0, 0, 0, 1);
+}
+
+.Auth-Content {
+  padding: 50px;
+}
+
+.Auth-Container-Title {
+  /* color: #5322BC; */
+  /* color: #000000; */
+  color: #6e00ff;
+  font-family: "Roboto", sans-serif;
+  font-weight: 900;
+  font-size: 40px;
+  padding: 20px;
+  padding-top: 0px;
+}
+
+.SeparatorLine {
+  width: 100%;
+  height: 1px;
+  /* background-color: #5322BC; */
+  background-color: #000000;
+  background-color: #6e00ff;
+}
+
+.Auth-Main-Content {
+  display: flex;
+  flex-direction: column;
+  padding-top: 20px;
+}
+
+.Auth-Main-Content > input {
+  text-decoration: none;
+  border: none;
+  background-color: unset;
+  text-align: center;
+  height: 40px;
+  margin: 20px;
+  outline: none;
+  font-family: "Roboto", sans-serif;
+  font-size: 20px;
+
+  background: #ffffff;
+  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+  border-radius: 15px;
+  color: #6e00ff;
+}
+
+.Auth-Main-Button {
+  width: 100%;
+  height: 50px;
+  /* background-color: aqua; */
+  /* margin: 10px; */
+  margin-top: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 20px;
+  font-family: "Roboto", sans-serif;
+  font-size: 20px;
+  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+  background-color: #6e00ff;
+  color: white;
+}
+
+.Auth-Main-Button:hover {
+  box-shadow: 0px 0px 4px rgba(0, 0, 0, 1);
+}
+
+body {
+  padding: 2%;
+  margin: 0px;
+  background-color: #eff6fc;
+}
+#root {
+  height: 91vh;
+}

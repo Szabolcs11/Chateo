@@ -1,0 +1,6 @@
+Multer máshova rakja a képeket, amit felhasználó küldött [KESŐBB]
+
+Kép preview [KESŐBB]
+
+Ha más küldte a képet, akkor jól jelenjen meg
+Socketban menjen a kép küldés

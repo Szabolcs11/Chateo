@@ -1,0 +1,3 @@
+GetMyRooms [UserID] - Szobák, amikben benne vagyok 
+SELECT roommembers.RoomID, rooms.RoomKey FROM roommembers, rooms WHERE roommembers.UserID=1 AND roommembers.RoomID=rooms.id;
+return: [RoomID, RoomKey]

@@ -1,0 +1,570 @@
+@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;900&display=swap");
+
+.searchbar {
+  grid-area: search;
+}
+.groups {
+  grid-area: groups;
+  /* background-color: blue; */
+}
+.people {
+  grid-area: people;
+  background-color: red;
+}
+.main {
+  grid-area: message;
+  background-color: green;
+}
+
+.container {
+  display: grid;
+  gap: 34px;
+  grid-template-columns: 1fr 2fr;
+  grid-template-rows: 10% 35% 47%;
+  grid-template-areas:
+    "search  message"
+    "people message"
+    "people message";
+  height: 100%;
+}
+
+/* .container {
+    display: grid;
+    gap: 34px;
+    grid-template-columns: 500px 920px;
+    grid-template-rows: 80px 320px 390px;
+    grid-template-areas: 
+        "search  message"
+        "groups message"
+        "people message";
+} */
+
+.MessagesMain {
+  /* padding-left: 40px; */
+  width: 100%;
+  height: 100%;
+}
+
+/* SearchBar - DESIGN - */
+
+.searchbar-main {
+  /* width: 100%; */
+  height: 100%;
+  background-color: #ffffff;
+  border-radius: 25px;
+  box-shadow: 0px 4px 5px 2px rgba(121, 197, 239, 0.38);
+
+  display: flex;
+  align-items: center;
+  padding-left: 23px;
+}
+
+.searchbar-text {
+  width: 100%;
+}
+
+.searchbar-input {
+  padding-left: 20px;
+  border: none;
+  height: 33px;
+  width: 50%;
+  font-size: 28px;
+  font-family: "Roboto", sans-serif;
+  line-height: 32px;
+  outline: none;
+  display: flex;
+}
+
+/* Groups */
+
+.groups {
+  /* width: 100%;
+    height: 100%; */
+  background: #ffffff;
+  box-shadow: 0px 4px 5px 2px rgba(121, 197, 239, 0.38);
+  border-radius: 25px;
+}
+
+.groups-main {
+  width: 100%;
+  height: 100%;
+  background-color: #ffffff;
+  box-shadow: 0px 4px 5px 2px rgba(121, 197, 239, 0.38);
+  border-radius: 25px;
+  /* padding: 22px; */
+}
+
+.groups-main-content {
+  padding: 22px;
+  box-sizing: border-box;
+  height: 100%;
+}
+
+.groups-content {
+  /* background-color: rgb(9, 101, 129); */
+  width: 100%;
+  height: 94%;
+  overflow: scroll;
+}
+
+.groups-content::-webkit-scrollbar {
+  display: none;
+}
+
+.groups-title {
+  font-family: "Roboto";
+  font-style: normal;
+  font-weight: 700;
+  font-size: 30px;
+  line-height: 35px;
+  letter-spacing: 0.05em;
+  margin-bottom: 0px;
+}
+
+.tab {
+  height: 70px;
+  width: 100%;
+  /* background-color: purple; */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+  margin-bottom: 0px;
+  cursor: pointer;
+}
+
+.tab-left {
+  /* width: 50px; */
+  height: 50px;
+  display: flex;
+  align-items: center;
+}
+
+.tab-icon {
+  border-radius: 50%;
+}
+
+.tab-datas {
+  font-family: "Roboto";
+  margin-left: 30px;
+}
+
+.tab-datas-name {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.tab-datas-lastmessage {
+  font-size: 16px;
+  font-weight: 300;
+}
+
+.tab-date {
+  font-family: "Roboto";
+  font-size: 16px;
+  font-weight: 300;
+  color: #7c7c7c;
+}
+
+.tab-notification {
+  width: 30px;
+  height: 30px;
+
+  float: right;
+  margin-top: 10px;
+}
+
+.tab-newmessage {
+  height: 100%;
+  width: 100%;
+  background-color: #f24e1e;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  font-size: 20px;
+  font-weight: 600;
+  /* margin-top: 7px; */
+}
+
+.tab-devider {
+  width: 100%;
+  height: 1px;
+  background-color: #b4abab;
+}
+
+/* END OF GROUPS */
+
+/* START OF people */
+
+.people {
+  width: 100%;
+  height: 100%;
+  background: #ffffff;
+  box-shadow: 0px 4px 5px 2px rgba(121, 197, 239, 0.38);
+  border-radius: 25px;
+}
+
+.people-container {
+  padding: 22px;
+  height: 100%;
+}
+
+.people-container-title {
+  font-family: "Roboto";
+  font-style: normal;
+  font-weight: 700;
+  font-size: 30px;
+  line-height: 35px;
+  letter-spacing: 0.05em;
+  margin-bottom: 0px;
+}
+
+.people-peoples-container {
+  width: 100%;
+  height: 85%;
+  overflow: scroll;
+  /* background-color: rebeccapurple; */
+}
+
+.people-peoples-container::-webkit-scrollbar {
+  display: none;
+}
+
+/* END OF People */
+
+.main {
+  background: #ffffff;
+  box-shadow: 0px 4px 5px 2px rgba(121, 197, 239, 0.38);
+  border-radius: 25px;
+  width: 100%;
+  height: 100%;
+}
+
+.main-container {
+  width: 100%;
+  height: 100%;
+  /* background-color: antiquewhite; */
+}
+
+.main-container-header {
+  height: 13%;
+  width: 100%;
+  min-height: 100px;
+}
+
+.main-container-header-content {
+  /* width: 100%; */
+  padding: 40px;
+  padding-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.main-container-header-left {
+  /* width: 50%; */
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.main-container-header-avatar-container {
+  width: 75px;
+  height: 75px;
+}
+
+.main-container-header-partner-name {
+  font-family: "Roboto";
+  font-style: normal;
+  font-weight: 700;
+  font-size: 30px;
+  line-height: 35px;
+  letter-spacing: 0.05em;
+}
+
+.main-container-header-partner-status {
+  font-family: "Roboto";
+  font-style: normal;
+  font-weight: 300;
+  font-size: 16px;
+  line-height: 23px;
+  letter-spacing: 0.05em;
+}
+
+.main-container-header-partner-datas {
+  margin-left: 20px;
+}
+
+.main-container-header-right {
+  /* width: 50%; */
+  /* height: 100%; */
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 46px;
+}
+
+.header-devider {
+  width: 95%;
+  height: 1px;
+  background-color: #b4abab;
+  /* align-self: center; */
+}
+
+.header-devider-container {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+}
+
+.main-contianer-main {
+  background-color: aqua;
+  width: 100%;
+  /* height: 100%; */
+}
+
+/* Messages */
+
+.main-container-messages {
+  /* background-color: #F24E1E; */
+  width: 100%;
+  /* height: 100%; */
+}
+
+.main-container-message-by-other {
+  /* height: 60px; */
+  /* background-color: #E7E7E7; */
+  display: flex;
+  align-items: center;
+
+  margin-top: 7px;
+  margin-bottom: 7px;
+}
+
+.main-container-message-by-other-avatar {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  margin-right: 17px;
+  width: 50px;
+  height: 50px;
+}
+
+.main-container-message-by-other-text {
+  font-family: "Roboto";
+  font-size: 26px;
+  font-weight: 400;
+  height: 100%;
+  background-color: #7c7c7c;
+  border-radius: 25px;
+  display: flex;
+  align-items: center;
+  padding-left: 30px;
+  padding-right: 30px;
+  max-width: 50%;
+  word-break: break-all;
+  padding-top: 17px;
+  padding-bottom: 17px;
+}
+
+.main-container-message-by-other-date {
+  font-family: "Roboto";
+  font-size: 20px;
+  font-weight: 300;
+  color: #7c7c7c;
+  margin-top: 7px;
+  margin-left: 80px;
+}
+
+.main-container-message-by-me-container {
+  margin-bottom: 10px;
+}
+
+.main-container-message-by-me {
+  /* height: 60px; */
+  margin-right: 40px;
+  margin-top: 7px;
+  margin-bottom: 7px;
+  text-align: right;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.main-container-message-by-me-2 {
+  /* height: 60px; */
+  /* margin-right: 40px;
+  margin-top: 7px;
+  margin-bottom: 7px; */
+  /* text-align: right; */
+  /* display: flex; */
+  /* justify-content: flex-end; */
+}
+
+.main-container-message-by-me-text {
+  font-family: "Roboto";
+  font-size: 26px;
+  font-weight: 400;
+  height: 100%;
+  background-color: #6e00ff;
+  border-radius: 25px;
+  display: flex;
+  align-items: center;
+  padding-left: 30px;
+  padding-right: 30px;
+  color: white;
+  padding-top: 17px;
+  padding-bottom: 17px;
+}
+
+.main-container-message-by-me-date {
+  font-family: "Roboto";
+  font-size: 20px;
+  color: #7c7c7c;
+  font-weight: 300;
+  display: flex;
+  justify-content: flex-end;
+  padding-right: 50px;
+}
+
+/* END OF MESSAAGES */
+
+/* VALAMI */
+
+.main-container-main {
+  padding: 30px;
+  padding-left: 40px;
+  padding-right: 40px;
+  padding-bottom: 10px;
+  /* height: 100%; */
+  /* padding-bottom: 0px; */
+
+  display: flex;
+  justify-content: space-between;
+}
+
+@media only screen and (max-width: 1024px) {
+  .main-container-main {
+    /* padding-bottom: 0px; */
+  }
+}
+
+@media only screen and (max-width: 960px) {
+  .main-container-header-partner-status {
+    display: none;
+  }
+}
+
+/* TESYTSS */
+
+/* START OF MESSAGES */
+
+.main-container-messages {
+  height: 87%;
+  width: 100%;
+  /* background-color: green; */
+
+  position: relative;
+}
+
+.main-container-messages-main {
+  padding: 20px;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  /* background-color: #F24E1E; */
+}
+
+.main-container-messages-content {
+  /* background-color: aqua; */
+  width: 100%;
+  /* height: 87%; */
+  height: 100%;
+
+  overflow: scroll;
+}
+
+.main-container-messages-content::-webkit-scrollbar {
+  display: none;
+}
+
+.main-container-messages-bottom {
+  width: 100%;
+  /* height: 10%; */
+  position: absolute;
+  /* bottom: 45px; */
+  display: flex;
+  justify-content: center;
+  justify-content: space-evenly;
+  /* padding: 30px; */
+}
+
+.main-container-messages-bottom-main {
+  background: rgba(239, 246, 252, 0.87);
+  border-radius: 25px;
+  /* border: 1px solid #000000; */
+  /* padding: 20px; */
+  /* width: 60%; */
+  /* width: 85%; */
+  /* width: 100%; */
+  /* height: 80px; */
+  height: 100%;
+  /* border: 1px solid black; */
+
+  padding-left: 30px;
+  padding-right: 30px;
+  margin-bottom: 10px;
+}
+
+.main-container-messages-bottom-container {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.main-bottom-input {
+  border: "none";
+  outline: "none";
+  background-color: "red";
+  height: 30px;
+  font-family: "Roboto";
+  font-size: 24px;
+  /* margin-left: 34px; */
+  background-color: transparent;
+  width: 100%;
+}
+
+.main-bottom-send-button {
+  /* width: 78px; */
+  /* height: 78px; */
+  width: 70%;
+  height: 100%;
+  background-color: #6e00ff;
+  border-radius: 20px;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+
+.main-container-messages-bottom-container-left {
+  display: flex;
+  align-items: center;
+  /* justify-content: flex-start; */
+}
+
+.noscroll::-webkit-scrollbar {
+  display: none;
+}
+
+.chatcomponent-nofiriendselected {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
