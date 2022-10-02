@@ -140,7 +140,7 @@ io.on("connection", (socket) => {
 });
 
 app.get("/", (req, res) => {
-  res.send("Szia");
+  res.send("Sziaa");
 });
 
 // Roomok amiben benen vagyok - SELECT rooms.id, rooms.RoomKey FROM roommembers INNER JOIN rooms ON roommembers.RoomID = rooms.id WHERE roommembers.UserID=1;
