@@ -68,8 +68,22 @@ io.on("connection", (socket) => {
     );
   });
 
-  socket.on("joinroom", (roomKey, socketjoin, cb) => {
+  socket.on("joinroom", (roomKey, socketjoin, allroom, myid, cb) => {
+    // console.log(myid);
     if (roomKey) {
+      // let allrm = [];
+      // allroom.forEach((e) => {
+      //   console.log(e);
+      //   allrm.push(e.RoomKey);
+      // });
+      // socket
+      //   .to(socket.AllRoom[i].RoomKey)
+      //   .emit("userdisconencted", "Offline", "Nev", socket.AllRoom[i].RoomKey);
+      socket.MyUserID = myid;
+      socket.to(roomKey).emit("userdisconencted", "Online", "Nev", roomKey);
+      if (allroom) {
+        socket.AllRoom = allroom;
+      }
       connection.query(
         "SELECT * FROM rooms WHERE RoomKey=?",
         roomKey,
@@ -137,6 +151,76 @@ io.on("connection", (socket) => {
       cb({ succes: false, message: "RoomKey or message not found!" });
     }
   });
+
+  // Handle Status \\
+
+  socket.on("updatestate", (status, username, cb) => {
+    console.log("Leave");
+    cb("asd");
+  });
+
+  socket.on("disconnect", (a) => {
+    // console.log(getFullDate(), "dc");
+    // console.log(socket.MyUserID);
+    if (socket.MyUserID) {
+      let data = {
+        Status: "Offline",
+        LastUpdate: getFullDate(),
+      };
+      connection.query(
+        "UPDATE users SET Status=? WHERE id=?",
+        [JSON.stringify(data), socket.MyUserID],
+        function (uuerr, uures) {
+          if (uuerr) throw uuerr;
+        }
+      );
+    }
+    if (socket.AllRoom) {
+      for (let i = 0; i < socket.AllRoom.length; i++) {
+        if (socket.AllRoom[i].UserID) {
+          // console.log("Privat", socket.AllRoom[i]);
+          socket
+            .to(socket.AllRoom[i].RoomKey)
+            .emit(
+              "userdisconencted",
+              "Offline",
+              "Nev",
+              socket.AllRoom[i].RoomKey
+            );
+        }
+      }
+      // socket.Allroom.forEach((e) => {
+      //   console.log(e);
+      // });
+    }
+    // if (socket.AllRoom) {
+    //   socket.AllRoom.forEach((e) => {
+    //     socket.to(e).emit("userdisconencted", "Offline", "Nev", e);
+    //     console.log(e);
+    //   });
+    // }
+    // console.log(getFullDate(), socket);
+    // console.log(getFullDate(), a);
+  });
+
+  // socket.on("changemystatus", (status, username, keys, cb) => {
+  //   console.log("---------");
+  //   console.log(getFullDate() + " :" + status);
+  //   console.log(getFullDate() + " :" + username);
+  //   console.log(getFullDate() + " :" + keys);
+  //   keys.forEach((e) => {
+  //     console.log(e);
+  //     // if (e.Name != username) {
+  //     socket.to(e.RoomKey).emit("userchangedstatus", status, e, username);
+  //     // }
+  //     // if (e.Name == username) {
+  //     // }
+  //   });
+  //   // console.log("end");
+  //   cb({ succes: true });
+  // });
+
+  // End of Handle Status\\
 });
 
 app.get("/", (req, res) => {
@@ -204,12 +288,23 @@ app.post("/login", (req, res) => {
                   info,
                   function (iserr, isres) {
                     if (iserr) throw iserr;
-                    return res.status(200).json({
-                      succes: true,
-                      message: "Succesful Login!",
-                      token: info.Token,
-                      user: sures[0],
-                    });
+                    let data = {
+                      Status: "Online",
+                      LastUpdate: getFullDate(),
+                    };
+                    connection.query(
+                      "UPDATE users SET Status=? WHERE id=?",
+                      [JSON.stringify(data), sures[0].id],
+                      function (uuerr, uures) {
+                        if (uuerr) throw uuerr;
+                        return res.status(200).json({
+                          succes: true,
+                          message: "Succesful Login!",
+                          token: info.Token,
+                          user: sures[0],
+                        });
+                      }
+                    );
                   }
                 );
               } else {
@@ -244,11 +339,22 @@ app.post("/authenticate", (req, res) => {
       function (sserr, ssres) {
         if (sserr) throw sserr;
         if (ssres.length) {
-          return res.status(200).json({
-            succes: true,
-            message: "Succesful Token validation",
-            user: ssres[0],
-          });
+          let data = {
+            Status: "Online",
+            LastUpdate: getFullDate(),
+          };
+          connection.query(
+            "UPDATE users SET Status=? WHERE id=?",
+            [JSON.stringify(data), ssres[0].id],
+            function (uuerr, uures) {
+              if (uuerr) throw uuerr;
+              return res.status(200).json({
+                succes: true,
+                message: "Succesful Token validation",
+                user: ssres[0],
+              });
+            }
+          );
         } else {
           res.status(200).json({
             succes: false,
@@ -873,7 +979,7 @@ async function getchats(myid) {
   // console.log(fres);
   for (let i = 0; i < fres.length; i++) {
     const [srmres, srmerr] = await contprom.execute(
-      "SELECT rooms.id, users.id AS UserID, users.Username AS Name, users.AvatarURL, rooms.RoomKey FROM roommembers INNER JOIN users ON roommembers.UserID=users.id INNER JOIN rooms ON rooms.id=roommembers.RoomID WHERE RoomID=? AND UserID!=?",
+      "SELECT rooms.id, users.id AS UserID, users.Status AS Status, users.Username AS Name, users.AvatarURL, rooms.RoomKey FROM roommembers INNER JOIN users ON roommembers.UserID=users.id INNER JOIN rooms ON rooms.id=roommembers.RoomID WHERE RoomID=? AND UserID!=?",
       [fres[i].id, myid]
     );
     // console.log(srmres);
@@ -884,6 +990,7 @@ async function getchats(myid) {
     } else {
       //Private message
       srmres[0].Notification = 0;
+      // srmres[0].Status = "Offline";
       datas.push(srmres[0]);
     }
   }
@@ -964,6 +1071,79 @@ async function getmygroups(myid) {
 //   const res = await getmygroups(1);
 //   console.log(res);
 // }, 100);
+
+app.post("/checkuserstate", (req, res) => {
+  if (req.body.UserID) {
+    connection.query(
+      "SELECT id, Status FROM users WHERE id=?",
+      req.body.UserID,
+      function (suerr, sures) {
+        if (suerr) throw suerr;
+        if (sures.length) {
+          return res.status(200).json({
+            succes: true,
+            userdata: sures[0],
+            message: "Succesful",
+          });
+        }
+      }
+    );
+  } else {
+    return res.status(200).json({
+      succes: false,
+      message: "No data!",
+    });
+  }
+});
+
+function checkstatuses() {
+  setTimeout(function () {
+    connection.query("SELECT * FROM users", function (suerr, sures) {
+      if (suerr) throw suerr;
+      if (sures.length) {
+        for (let i = 0; i < sures.length; i++) {
+          let statusdatas = JSON.parse(sures[i].Status);
+          let lastupdatedate = new Date(statusdatas.LastUpdate);
+          let currentdate = new Date(getFullDate());
+          let elapsedtime = currentdate - lastupdatedate;
+          if (elapsedtime > 600000) {
+            if (statusdatas.Status != "Offline") {
+              let info = {
+                Status: "Offline",
+                LastUpdate: currentdate,
+              };
+              connection.query(
+                "UPDATE users SET Status=? WHERE id=?",
+                [JSON.stringify(info), sures[i].id],
+                function (userr, usres) {
+                  if (userr) throw userr;
+                }
+              );
+            }
+          }
+          if (elapsedtime > 60000) {
+            if (statusdatas.Status == "Online") {
+              let info = {
+                Status: "Away",
+                LastUpdate: currentdate,
+              };
+              connection.query(
+                "UPDATE users SET Status=? WHERE id=?",
+                [JSON.stringify(info), sures[i].id],
+                function (userr, usres) {
+                  if (userr) throw userr;
+                }
+              );
+            }
+          }
+        }
+      }
+    });
+    checkstatuses();
+  }, 15000);
+}
+
+// checkstatuses();
 
 // Useful functions \\
 function getFullDate() {

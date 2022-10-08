@@ -1,3 +1,5 @@
 api/node_modules
 app/node_modules
 app/build
+api/public/UsersProfileImg
+api/public/UsersProfileImgX

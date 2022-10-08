@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import io from "socket.io-client";
 import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
@@ -18,10 +18,14 @@ import { AiOutlineCloseCircle } from "react-icons/ai";
 
 import MessageByMe from "./MessageByMe";
 import MessageByOther from "./MessageByOther";
-import HeaderComponent from "./HeaderComponent";
+import HeaderComponent, { updatestatus } from "./HeaderComponent";
 
 import { apiurl, emojis } from "../config/globalVariables";
-import { changeusernotificationstatus, personsforceupdate } from "./Persons";
+import {
+  changestatusofuser,
+  changeusernotificationstatus,
+  personsforceupdate,
+} from "./Persons";
 import FileUploadComponent from "./FileUploadComponent";
 
 import choseafriend from "../assets/svgs/ChoseAFriend.svg";
@@ -32,6 +36,8 @@ import x from "../assets/svgs/x.svg";
 import blackx from "../assets/svgs/blackx.svg";
 
 import style from "../styles/ChatComponent.css";
+
+import useWindowFocus from "use-window-focus";
 
 // import { apiurl } from "./../src/config/globalVariables";
 
@@ -132,6 +138,14 @@ function ChatComponent(props) {
     apiurl + "UsersProfileImg/DefaultGroupsCover.png"
   );
 
+  // Testing \\
+  const windowFocused = useWindowFocus();
+  const [chatKeys, setChatKeys] = useState();
+
+  // const [currentRoomStatus, setCurrentRoomStatus] = useState();
+
+  // End of testing \\
+
   // End of grouos \\
 
   // Emoji selector \\
@@ -141,13 +155,203 @@ function ChatComponent(props) {
   const bottomScroll = useRef(null);
   const currentMessage = useRef("");
 
+  // Testing 10-03 \\
+
+  const initBeforeUnLoad = (showExitPrompt) => {
+    window.onbeforeunload = (event) => {
+      // Show prompt based on state
+      console.log("1");
+      callsocket();
+      if (showExitPrompt) {
+        const e = event || window.event;
+        e.preventDefault();
+        if (e) {
+          e.returnValue = "";
+        }
+        return "";
+      }
+    };
+  };
+
+  const [showExitPrompt, setShowExitPrompt] = useState(false);
+
+  window.onload = function () {
+    initBeforeUnLoad(showExitPrompt);
+  };
+
+  // Re-Initialize the onbeforeunload event listener
+  useEffect(() => {
+    initBeforeUnLoad(showExitPrompt);
+  }, [showExitPrompt]);
+
+  // useEffect(() => {
+  // window.onbeforeunload = (event) => {
+  //   const e = event || window.event;
+  //   console.log("a");
+  //   callsocket();
+  //   e.preventDefault();
+  //   if (e) {
+  //     e.returnValue = ""; // Legacy method for cross browser support
+  //   }
+  // };
+  // }, []);
+
+  // Ez ha el kattintok az oldalról \\
+  // useEffect(() => {
+  //   document.addEventListener("visibilitychange", function logData() {
+  //     if (document.visibilityState === "hidden") {
+  //       callsocket();
+  //     } else {
+  //       console.log("visszajottem");
+  //     }
+  //   });
+  // }, []);
+
+  const callsocket = async () => {
+    console.log("b");
+    socket.emit("updatestate", "Away", props.myuserdatas.Username, (cb) => {
+      console.log(cb);
+    });
+    console.log("c");
+  };
+  // \\
+
+  // End of Testing 10-03
+
+  // const changemystatus = (status) => {
+  //   // console.log(status);
+  //   // console.log(chatKeys);
+  //   socket.emit(
+  //     "changemystatus",
+  //     status,
+  //     props.myuserdatas.Username,
+  //     chatKeys,
+  //     (cb) => {
+  //       console.log(cb);
+  //     }
+  //   );
+  // };
+
+  // const handleStatusChange = (focused, keys) => {
+  //   if (keys) {
+  //     // console.log(focused);
+  //     // console.log(keys);
+  //     // console.log(props.myuserdatas.Username);
+  //     if (focused) {
+  //       socket.emit(
+  //         "changemystatus",
+  //         "Online",
+  //         props.myuserdatas.Username,
+  //         keys,
+  //         (cb) => {
+  //           // console.log(cb);
+  //         }
+  //       );
+  //     } else {
+  //       socket.emit(
+  //         "changemystatus",
+  //         "Away",
+  //         props.myuserdatas.Username,
+  //         keys,
+  //         (cb) => {
+  //           // console.log(cb);
+  //         }
+  //       );
+  //     }
+  //   }
+  // };
+
+  // useEffect(() => {
+  //   socket.on("userchangedstatus", (st, chat, username) => {
+  //     if (username != props.myuserdatas.Username) {
+  //       changestatusofuser(st, username);
+  //     }
+  //   });
+  // }, [socket]);
+
+  // useEffect(() => {
+  //   if (socket == null) return;
+  //   socket.on("userchangedstatus", (status, chat, username) => {
+  //     if (chat.Name == props.myuserdatas.Username) {
+  //       console.log(chat, username, status);
+  //       let temp = partnerdatas;
+  //       console.log(temp);
+  //       // temp.Status = status;
+  //       // partnerdatas.Status
+  //       // setPartnerDatas(temp);
+  //       // changestatusofuser(status, username);
+  //     }
+
+  //     // console.log("StatusChanged", status, key);
+  //     // console.log("-");
+  //     // let currentrk = localStorage.getItem("RoomKey") || "";
+  //     // console.log("currentrk", currentrk);
+  //     // // console.log(currentrk);
+  //     // // console.log(key.RoomKey);
+  //     // if (props.myuserdatas.Username == key.Name) {
+  //     // console.log(key.Name + " Changed status to " + status);
+  //     // changestatusofuser(key, status);
+  //     // }
+  //   });
+  // }, [socket]);
+
+  useEffect(() => {
+    socket.on("userdisconencted", (status, name, roomkey) => {
+      // console.log(status, name, roomkey);
+      changestatusofuser(roomkey, status);
+      let currentRKey = localStorage.getItem("RoomKey") || "";
+      if (currentRKey == roomkey) {
+        // setCurrentRoomStatus(status);
+        // console.log(partnerdatas);
+        var today = new Date();
+        let date =
+          today.getFullYear() +
+          "-" +
+          (today.getMonth() + 1) +
+          "-" +
+          today.getDate() +
+          " " +
+          today.getHours() +
+          ":" +
+          today.getMinutes() +
+          ":" +
+          today.getSeconds();
+        // console.log(e.Status);
+        // console.log(date);
+        let info = {
+          Status: status,
+          LastUpdate: date,
+        };
+        // e.Status = JSON.stringify(info);
+        updatestatus(status);
+        // updatestatus(JSON.stringify(info));
+        // console.log("setteltem");
+        forceUpdate();
+      }
+    });
+  }, [socket]);
+
   joinAllPrivateConversation = (chats) => {
     localStorage.clear("RoomKey");
+    let keys = [];
     chats.forEach((e) => {
-      socket.emit("joinroom", e.RoomKey, true, (cb) => {
-        // console.log(cb);
-      });
+      if (e.UserID) {
+        keys.push(e); // Here can add the entire chat datas
+      }
+      // console.log(e);
+      socket.emit(
+        "joinroom",
+        e.RoomKey,
+        true,
+        chats,
+        props.myuserdatas.id,
+        (cb) => {
+          // console.log(cb);
+        }
+      );
     });
+    setChatKeys(keys);
+    // handleStatusChange(windowFocused, keys);
   };
 
   const loadMessages = (messagedatas) => {
@@ -168,9 +372,16 @@ function ChatComponent(props) {
     console.log(chatdatas);
     setMessages([]);
     socket.emit("getroommessages", chatdatas.id, (cb) => {
+      console.log("selected");
       // console.log("geroommessages");
       // console.log(cb);
+      if (chatdatas.Status) {
+        let st = JSON.parse(chatdatas.Status);
+        console.log(st.Status);
+        updatestatus(st.Status);
+      }
       if (cb.succes) {
+        // console.log(chatdatas);
         // console.log(cb.messagedatas);
         // let obj = cb.messagedatas[17].ImageIDs.split(",");
         // console.log(obj);
@@ -180,6 +391,8 @@ function ChatComponent(props) {
       joinroom(chatdatas.RoomKey);
     });
     setPartnerDatas(chatdatas);
+    // setCurrentRoomStatus(chatdatas.Status || "");
+    // console.log(chatdatas);
   };
 
   useEffect(() => {
@@ -189,14 +402,21 @@ function ChatComponent(props) {
   const [currentRoomKey, setCurrentRoomKey] = useState();
 
   const joinroom = (RoomKey) => {
-    console.log(RoomKey);
-    socket.emit("joinroom", false, RoomKey, (cb) => {
-      // setCurrentRoomKey((currentKey) => RoomKey);
-      // setCurrentRoomKey((currentKey) => ({ [currentKey]: [messages] }));
-      setCurrentRoomKey(RoomKey);
-      //local storage
-      localStorage.setItem("RoomKey", RoomKey);
-    });
+    // console.log(RoomKey);
+    socket.emit(
+      "joinroom",
+      RoomKey,
+      false,
+      false,
+      props.myuserdatas.id,
+      (cb) => {
+        // setCurrentRoomKey((currentKey) => RoomKey);
+        // setCurrentRoomKey((currentKey) => ({ [currentKey]: [messages] }));
+        setCurrentRoomKey(RoomKey);
+        //local storage
+        localStorage.setItem("RoomKey", RoomKey);
+      }
+    );
   };
 
   useEffect(() => {
@@ -763,12 +983,25 @@ function ChatComponent(props) {
       }}
     >
       <div style={{ height: "20%" }}>
-        <HeaderComponent
-          partnername={partnerdatas.Name || ""}
-          avatar={partnerdatas.AvatarURL || ""}
-          status={"Online"}
-          // status={"Online - Last seen, 2.02pm"}
-        />
+        {partnerdatas.Status ? (
+          <HeaderComponent
+            partnername={partnerdatas.Name || ""}
+            avatar={partnerdatas.AvatarURL || ""}
+            status={JSON.parse(partnerdatas.Status).Status}
+            partnerid={partnerdatas.UserID || ""}
+            // status={currentRoomStatus}
+            // status={"Online - Last seen, 2.02pm"}
+          />
+        ) : (
+          <HeaderComponent
+            partnername={partnerdatas.Name || ""}
+            avatar={partnerdatas.AvatarURL || ""}
+            status={""}
+            partnerid={partnerdatas.UserID || ""}
+            // partnerid={currentRoomStatus}
+            // status={"Online - Last seen, 2.02pm"}
+          />
+        )}
       </div>
       <div style={{ height: "70%" }}>
         <div className="main-container-messages-main">

@@ -20,4 +20,5 @@ export const emojis = [
   ["😘", ":Smiley<>3KISS>:"],
   ["💻", ":OELaptop:"],
   ["⌨️", ":OEKeyboard:"],
+  ["👍", ":HandLike:"],
 ];

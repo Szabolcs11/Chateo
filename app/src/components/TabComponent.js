@@ -3,7 +3,15 @@ import React from "react";
 import seenicon from "../assets/svgs/seen.svg";
 import { apiurl } from "../config/globalVariables";
 
-function TabComponent({ avatar, name, lastmessage, date, notification, seen }) {
+function TabComponent({
+  avatar,
+  name,
+  lastmessage,
+  date,
+  notification,
+  seen,
+  status,
+}) {
   return (
     <div className="tab">
       <div className="tab-left">
@@ -21,6 +29,11 @@ function TabComponent({ avatar, name, lastmessage, date, notification, seen }) {
         </div>
       </div>
       <div className="tab-datasandnotifications">
+        {/* {status && (
+          <div>
+            <p>{status}</p>
+          </div>
+        )} */}
         {date && <div className="tab-date">{date}</div>}
         {/* {notification && notification > 0 && ( */}
         {notification > 0 && (

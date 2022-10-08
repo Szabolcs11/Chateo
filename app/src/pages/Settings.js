@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { useCookies } from "react-cookie";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import TwoFaComponent from "../components/TwoFaComponent";
 import UserDatasComponent from "../components/UserDatasComponent";
 import { apiurl } from "../config/globalVariables";
 import stlye from "../styles/SettingsStyle.css";
@@ -57,11 +58,26 @@ function Settings(props) {
     >
       <div className="SettingsContainer">
         <div style={{ padding: 40 }}>
-          <UserDatasComponent
-            UserID={props.userdatas.id}
-            Avatar={props.userdatas.AvatarURL}
-            Username={props.userdatas.Username}
-          />
+          <div
+            style={{
+              display: "flex",
+              width: "100%",
+              gap: 10,
+              // backgroundColor: "red",
+              justifyContent: "space-between",
+            }}
+          >
+            <div style={{ width: "50%" }}>
+              <UserDatasComponent
+                UserID={props.userdatas.id}
+                Avatar={props.userdatas.AvatarURL}
+                Username={props.userdatas.Username}
+              />
+            </div>
+            <div style={{ width: "50%" }}>
+              <TwoFaComponent />
+            </div>
+          </div>
           <div
             style={{
               marginTop: 30,

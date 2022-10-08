@@ -19,10 +19,15 @@ export let changeusernotificationstatus;
 
 export let personsforceupdate;
 
+export let searchchats;
+
+export let changestatusofuser;
+
 function Persons(props) {
   const [friends, setFriends] = useState();
   const [groups, setGroups] = useState();
   const [chats, setChats] = useState([]);
+  const [searchChats, setSearchChats] = useState([]);
   // Force update
   const [, updateState] = React.useState();
   const forceUpdate = React.useCallback(() => updateState({}), []);
@@ -40,9 +45,109 @@ function Persons(props) {
           // setGroups(res.data.groups);
           joinAllPrivateConversation(res.data.chats);
           setChats(res.data.chats);
+          setSearchChats(res.data.chats);
         }
       });
   }, []);
+
+  changestatusofuser = (roomkey, status) => {
+    // console.log(roomkey, status);
+    // console.log(searchChats);
+    let temp = searchChats;
+    temp.map((e) => {
+      if (e.RoomKey == roomkey) {
+        // console.log("Founded!");
+        // console.log(e);
+        var today = new Date();
+        let date =
+          today.getFullYear() +
+          "-" +
+          (today.getMonth() + 1) +
+          "-" +
+          today.getDate() +
+          " " +
+          today.getHours() +
+          ":" +
+          today.getMinutes() +
+          ":" +
+          today.getSeconds();
+        // console.log(e.Status);
+        // console.log(date);
+        let info = {
+          Status: status,
+          LastUpdate: date,
+        };
+        e.Status = JSON.stringify(info);
+      }
+    });
+    // console.log(searchChats[0].Name);
+    // console.log(searchChats[0].Status);
+    setSearchChats(temp);
+    forceUpdate();
+  };
+
+  // changestatusofuser = (st, username) => {
+  //   // console.log("--");
+  //   console.log(username + " => " + st);
+  //   let temp = chats;
+  //   temp.filter((e) => {
+  //     if (e.Name == username) {
+  //       console.log(username + " ==> " + st.toString());
+  //       e.Status = st;
+  //     }
+  //     return e;
+  //   });
+  //   console.log(temp);
+  //   setChats(temp);
+  //   forceUpdate();
+
+  //   // console.log(temp);
+  //   // setSearchChats(temp);
+
+  //   // console.log(temp);
+  //   // console.log(key);
+  //   // console.log("Before");
+  //   // console.log(temp);
+  //   // temp.filter((e) => {
+  //   //   // console.log(e.Name, key.Name, props.username);
+  //   //   // if (e.Name == props.username) {
+  //   //   // console.log("status", st);
+  //   //   // if (st == "Online") {
+  //   //   //   e.Status = "Away";
+  //   //   // } else if (st == "Away") {
+  //   //   //   e.Status = "Online";
+  //   //   // } else {
+  //   //   //   e.Status = "Offline";
+  //   //   // }
+  //   //   // console.log("equal");
+  //   //   // e.Status = st;
+  //   //   // e.Status = "abcdef";
+  //   //   // }
+  //   //   return e;
+  //   // });
+
+  //   // setSearchChats(temp);
+  //   // forceUpdate();
+
+  //   // console.log("After");
+  //   // console.log(temp);
+  // };
+
+  searchchats = (value) => {
+    if (value == "") {
+      setSearchChats(chats);
+      return;
+    }
+    let tempchats = chats;
+    let newarr = [];
+    tempchats.forEach((e) => {
+      if (e.Name.toLowerCase().includes(value.toLowerCase())) {
+        newarr.push(e);
+      }
+    });
+    setSearchChats(newarr);
+    forceUpdate();
+  };
 
   personsforceupdate = () => {
     axios
@@ -138,7 +243,7 @@ function Persons(props) {
           </div>
         </div>
         <div className="tab-devider"></div>
-        {chats.map((c, index) => {
+        {searchChats.map((c, index) => {
           return (
             <Fragment key={index}>
               <div
@@ -150,6 +255,7 @@ function Persons(props) {
                   name={c.Name}
                   avatar={c.AvatarURL}
                   notification={c.Notification ? c.Notification : 0}
+                  // status={c.Status}
                   // date={"Today, 9.52"}
                   // lastmessage={p.lastmessage}
                   // seen={p.seen}

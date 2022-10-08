@@ -1,30 +1,19 @@
 import React, { useEffect, useState } from "react";
 import style from "../styles/Messages.css";
-import searchicon from "../assets/svgs/search.svg";
 
 import ChatComponent from "../components/ChatComponent";
 import Persons from "../components/Persons";
 import GroupsComponent from "../components/GroupsComponent";
 import axios from "axios";
 import { apiurl } from "../config/globalVariables";
+import MessagesSearchBarComponent from "../components/MessagesSearchBarComponent";
 
 function Messages(props) {
   return (
     <div className="MessagesMain">
       <div className="container">
         <div className="searchbar">
-          <div className="searchbar-main">
-            <div className="searchbar-icon">
-              <img alt="NoImgFound" src={searchicon} />
-            </div>
-            <div className="searchbar-text">
-              <input
-                className="searchbar-input"
-                placeholder="Search"
-                type="text"
-              />
-            </div>
-          </div>
+          <MessagesSearchBarComponent />
         </div>
 
         {/* <div className="groups">
@@ -32,7 +21,10 @@ function Messages(props) {
         </div> */}
 
         <div className="people">
-          <Persons myid={props.userdatas.id} />
+          <Persons
+            myid={props.userdatas.id}
+            username={props.userdatas.Username}
+          />
         </div>
 
         <div className="main">
