@@ -3,18 +3,46 @@ import React, { useState } from "react";
 import { useCookies } from "react-cookie";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import TurnOffTwoFa from "../components/TurnOffTwoFa";
+import TurnOnTwoFa from "../components/TurnOnTwoFa";
 import TwoFaComponent from "../components/TwoFaComponent";
 import UserDatasComponent from "../components/UserDatasComponent";
 import { apiurl } from "../config/globalVariables";
 import stlye from "../styles/SettingsStyle.css";
 
+export let handleStartEnableTwoFa;
+
+export let handleStartDisableTwoFa;
+
+export let twofaactivated;
+
 function Settings(props) {
+  // console.log(props);
   const [currPass, setCurrPass] = useState();
   const [newPass, setNewPass] = useState();
   const [newPassAgn, setNewPassAgn] = useState();
 
   const [cookies, setCookie, removeCookie] = useCookies(["sessiontoken"]);
   const navigate = useNavigate();
+
+  // 2FA Things \\
+  const [enableTwoFa, setEnableTwoFa] = useState();
+  const [disableTwoFa, setDisableTwoFa] = useState();
+
+  handleStartEnableTwoFa = (state) => {
+    setEnableTwoFa(state);
+  };
+
+  handleStartDisableTwoFa = (state) => {
+    // console.log("most kene jelenjen");
+    setDisableTwoFa(state);
+  };
+
+  twofaactivated = () => {
+    setEnableTwoFa(false);
+  };
+
+  // End of 2FA Things \\
   const handleChangePassword = () => {
     axios
       .post(apiurl + "changepassword", {
@@ -53,9 +81,22 @@ function Settings(props) {
       style={{
         width: "100%",
         height: "100%",
+        position: "relative",
         // paddingLeft: 40,
       }}
     >
+      {enableTwoFa && (
+        <TurnOnTwoFa
+          userid={props.userdatas.id}
+          username={props.userdatas.Username}
+        />
+      )}
+      {disableTwoFa && (
+        <TurnOffTwoFa
+          userid={props.userdatas.id}
+          username={props.userdatas.Username}
+        />
+      )}
       <div className="SettingsContainer">
         <div style={{ padding: 40 }}>
           <div
@@ -75,7 +116,7 @@ function Settings(props) {
               />
             </div>
             <div style={{ width: "50%" }}>
-              <TwoFaComponent />
+              <TwoFaComponent userid={props.userdatas.id} />
             </div>
           </div>
           <div

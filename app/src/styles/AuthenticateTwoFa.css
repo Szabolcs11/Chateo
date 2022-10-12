@@ -1,0 +1,31 @@
+.Verify-Button {
+  background-color: #0bda51;
+  width: 30%;
+  padding: 10px;
+  border-radius: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.Verify-Button:hover {
+  background-color: #0bda51;
+  opacity: 0.9;
+}
+
+.Input-Field {
+  background-color: transparent;
+  border: none;
+  outline: none;
+  border-bottom: 2px solid rgb(212, 212, 212);
+  font-size: 26px;
+  color: white;
+  text-align: center;
+  margin: 15px;
+}
+
+.Input-Field::placeholder {
+  opacity: 0.9;
+  color: white;
+}

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, Navigate } from "react-router-dom";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
@@ -15,8 +15,10 @@ import Messages from "./pages/Messages";
 import Settings from "./pages/Settings";
 import MainLayout from "./components/MainLayout";
 import SearchFriends from "./pages/SearchFriends";
+import AuthenticateTwoFa from "./pages/Auth/AuthenticateTwoFa";
 
 export let handleLogin;
+export let handleTwoFaLogin;
 export let handleRegister;
 export let handleLogout;
 
@@ -43,6 +45,15 @@ function App() {
     }
   }, []);
 
+  handleTwoFaLogin = (userdatas, token) => {
+    console.log(userdatas);
+    console.log(token);
+    setUser(userdatas);
+    setCookie("sessiontoken", token);
+    toast.success("Succesful login!");
+    navigate("/");
+  };
+
   handleLogin = (username, password) => {
     axios
       .post(apiurl + "login", {
@@ -51,9 +62,14 @@ function App() {
         Password: password,
       })
       .then((res) => {
+        console.log(res.data);
         if (res.data.succes) {
-          setCookie("sessiontoken", res.data.token);
-          setUser(res.data.user);
+          if (res.data.twofalogin) {
+            navigate("/authenticate/" + res.data.Token);
+          } else {
+            setCookie("sessiontoken", res.data.token);
+            setUser(res.data.user);
+          }
         } else {
           toast.error(res.data.message);
         }
@@ -134,7 +150,9 @@ function App() {
       />
       <Routes>
         <Route path="/" element={<Auth />} />
+        <Route path="/" element={<Navigate to="/auth" replace />} />
         <Route path="/auth" element={<Auth />} />
+        <Route path="/authenticate/:key" element={<AuthenticateTwoFa />} />
         <Route path="*" element={<Error404 />} />
       </Routes>
     </>

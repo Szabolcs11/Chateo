@@ -10,6 +10,11 @@ const multer = require("multer");
 const cors = require("cors");
 const { info } = require("console");
 
+// 2FA | QR Code \\
+
+const speakeasy = require("speakeasy");
+const qrcode = require("qrcode");
+
 var corsOptions = {
   origin: "http://localhost:3000",
 };
@@ -277,36 +282,58 @@ app.post("/login", (req, res) => {
             sures[0].Password,
             function (err, isMath) {
               if (isMath) {
-                let info = {
-                  UserID: sures[0].id,
-                  Token: GenerateToken(32),
-                  Date: getFullDate(),
-                  Ip: getIp(req),
-                };
-                connection.query(
-                  "INSERT INTO sessions SET ?",
-                  info,
-                  function (iserr, isres) {
-                    if (iserr) throw iserr;
-                    let data = {
-                      Status: "Online",
-                      LastUpdate: getFullDate(),
-                    };
-                    connection.query(
-                      "UPDATE users SET Status=? WHERE id=?",
-                      [JSON.stringify(data), sures[0].id],
-                      function (uuerr, uures) {
-                        if (uuerr) throw uuerr;
-                        return res.status(200).json({
-                          succes: true,
-                          message: "Succesful Login!",
-                          token: info.Token,
-                          user: sures[0],
-                        });
-                      }
-                    );
-                  }
-                );
+                if (sures[0].Secret == 0) {
+                  let info = {
+                    UserID: sures[0].id,
+                    Token: GenerateToken(32),
+                    Date: getFullDate(),
+                    Ip: getIp(req),
+                  };
+                  connection.query(
+                    "INSERT INTO sessions SET ?",
+                    info,
+                    function (iserr, isres) {
+                      if (iserr) throw iserr;
+                      let data = {
+                        Status: "Online",
+                        LastUpdate: getFullDate(),
+                      };
+                      connection.query(
+                        "UPDATE users SET Status=? WHERE id=?",
+                        [JSON.stringify(data), sures[0].id],
+                        function (uuerr, uures) {
+                          if (uuerr) throw uuerr;
+                          return res.status(200).json({
+                            succes: true,
+                            message: "Succesful Login!",
+                            token: info.Token,
+                            user: sures[0],
+                          });
+                        }
+                      );
+                    }
+                  );
+                } else {
+                  // Ha van 2FA
+                  let info = {
+                    UserID: sures[0].id,
+                    Token: GenerateToken(32),
+                    Date: getFullDate(),
+                    Ip: getIp(req),
+                  };
+                  connection.query(
+                    "INSERT INTO twofalogins SET ?",
+                    info,
+                    function (iterr, itres) {
+                      if (iterr) throw iterr;
+                      return res.status(200).json({
+                        succes: true,
+                        twofalogin: true,
+                        Token: info.Token,
+                      });
+                    }
+                  );
+                }
               } else {
                 return res.status(200).json({
                   succes: false,
@@ -1145,6 +1172,210 @@ function checkstatuses() {
 
 // checkstatuses();
 
+// 2FA \\
+
+// Generating the QR code \\
+app.get("/generateqrcode", (req, res) => {
+  var secret = speakeasy.generateSecret({
+    name: "Chateo",
+  });
+  qrcode.toDataURL(secret.otpauth_url, function (err, data) {
+    url = data;
+    return res.status(200).json({
+      succes: true,
+      qrcodedeurl: url,
+      seecret: secret.ascii,
+    });
+    // res.sendFile(url, options);
+  });
+});
+
+// Enable the twofa \\
+
+app.post("/turnontwofa", (req, res) => {
+  if (req.body.key && req.body.secret && req.body.myid) {
+    let verified = verifytwofacode(req.body.key, req.body.secret);
+    if (verified) {
+      connection.query(
+        "UPDATE users SET Secret=? WHERE id=?",
+        [req.body.secret, req.body.myid],
+        function (uuerr, uures) {
+          if (uuerr) throw uuerr;
+          return res.status(200).json({
+            succes: true,
+            message: "Succesful activation!",
+          });
+        }
+      );
+    } else {
+      return res.status(200).json({
+        succes: false,
+        message: "Incorrect code!",
+      });
+    }
+  } else {
+    return res.status(200).json({
+      succes: false,
+      message: "No datas found!",
+    });
+  }
+});
+
+app.post("/turnofftwofa", (req, res) => {
+  if (req.body.myid && req.body.key) {
+    connection.query(
+      "SELECT Secret FROM users WHERE id=?",
+      req.body.myid,
+      function (suerr, sures) {
+        if (suerr) throw suerr;
+        if (sures.length) {
+          // console.log(sures[0].Secret);
+          let verified = verifytwofacode(req.body.key, sures[0].Secret);
+          console.log(verified);
+          if (verified) {
+            connection.query(
+              "UPDATE users SET Secret=? WHERE id=?",
+              ["0", req.body.myid],
+              function (uuerr, uures) {
+                if (uuerr) throw uuerr;
+                return res.status(200).json({
+                  succes: true,
+                  message: "Succesfully turned off the 2FA!",
+                });
+              }
+            );
+          } else {
+            return res.status(200).json({
+              succes: false,
+              message: "Incorrect code!",
+            });
+          }
+        }
+      }
+    );
+  }
+});
+
+app.post("/verifytwofa", (req, res) => {
+  if (req.body.key && req.body.token) {
+    connection.query(
+      "SELECT * FROM twofalogins WHERE Token=?",
+      req.body.key,
+      function (sterr, stres) {
+        if (sterr) throw sterr;
+        if (stres.length) {
+          connection.query(
+            "SELECT * FROM users WHERE id=?",
+            stres[0].UserID,
+            function (suerr, sures) {
+              if (suerr) throw suerr;
+              if (sures.length) {
+                let verified = verifytwofacode(req.body.token, sures[0].Secret);
+                if (verified) {
+                  let info = {
+                    UserID: sures[0].id,
+                    Token: GenerateToken(32),
+                    Date: getFullDate(),
+                    Ip: getIp(req),
+                  };
+                  connection.query(
+                    "INSERT INTO sessions SET ?",
+                    info,
+                    function (iserr, isres) {
+                      if (iserr) throw iserr;
+                      let data = {
+                        Status: "Online",
+                        LastUpdate: getFullDate(),
+                      };
+                      connection.query(
+                        "UPDATE users SET Status=? WHERE id=?",
+                        [JSON.stringify(data), sures[0].id],
+                        function (uuerr, uures) {
+                          if (uuerr) throw uuerr;
+                          connection.query(
+                            "DELETE FROM twofalogins WHERE Token=?",
+                            req.body.key,
+                            function (dterr, dtres) {
+                              if (dterr) throw dterr;
+                              return res.status(200).json({
+                                succes: true,
+                                message: "Succesful Login!",
+                                token: info.Token,
+                                user: sures[0],
+                              });
+                            }
+                          );
+                        }
+                      );
+                    }
+                  );
+                } else {
+                  return res.status(200).json({
+                    succes: false,
+                    message: "Incorrect code!",
+                  });
+                }
+              } else {
+                return res.status(200).json({
+                  succes: false,
+                  urlerror: true,
+                  message: "UserID error!",
+                });
+              }
+            }
+          );
+        } else {
+          return res.status(200).json({
+            succes: false,
+            urlerror: true,
+            message: "UrlToken not found!",
+          });
+        }
+      }
+    );
+  }
+});
+
+// Verify 2FA code \\
+function verifytwofacode(key, secret) {
+  let verify = speakeasy.totp.verify({
+    secret: secret,
+    encoding: "ascii",
+    token: key,
+  });
+  return verify;
+}
+
+app.post("/gettwofastatus", (req, res) => {
+  if (req.body.myid) {
+    connection.query(
+      "SELECT Secret FROM users WHERE id=?",
+      req.body.myid,
+      function (ssuerr, ssures) {
+        if (ssuerr) throw ssuerr;
+        console.log(ssures[0].Secret);
+        if (ssures[0].Secret != 0) {
+          return res.status(200).json({
+            succes: true,
+            secret: true,
+          });
+        } else {
+          return res.status(200).json({
+            succes: true,
+            secret: false,
+          });
+        }
+      }
+    );
+  } else {
+    return res.status(200).json({
+      succes: false,
+      message: "No datas found!",
+      secret: false,
+    });
+  }
+});
+
 // Useful functions \\
 function getFullDate() {
   var today = new Date();
@@ -1165,7 +1396,7 @@ function getFullDate() {
 
 function GenerateToken(length) {
   var randomChars =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789*+!%/=()";
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
   var result = "";
   for (var i = 0; i < length; i++) {
     result += randomChars.charAt(
