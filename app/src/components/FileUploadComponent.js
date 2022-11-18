@@ -3,7 +3,6 @@ import attachmentimg from "../assets/svgs/attachment.svg";
 
 function FileUploadComponent({ callback }) {
   const handleChange = async (e) => {
-    console.log("file", e);
     const src = URL.createObjectURL(e.target.files[0]);
     if (e.target.files.length > 0) {
       let srcs = [];

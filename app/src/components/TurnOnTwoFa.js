@@ -19,8 +19,6 @@ function TurnOnTwoFa({ userid, username }) {
       isNaN(twofacode.current.value)
     )
       return;
-    // console.log(twofacode.current.value);
-    // console.log(secret);
     axios
       .post(apiurl + "turnontwofa", {
         key: twofacode.current.value,
@@ -41,7 +39,7 @@ function TurnOnTwoFa({ userid, username }) {
   useEffect(() => {
     const func = async () => {
       const res = await axios.get(apiurl + "generateqrcode");
-      console.log(res);
+      //console.log(res);
       setUrl(res.data.qrcodedeurl);
       setSecret(res.data.seecret);
     };
@@ -111,17 +109,12 @@ function TurnOnTwoFa({ userid, username }) {
                 justifyContent: "center",
               }}
             >
-              <img
-                style={{ width: "80%" }}
-                // src="https://www.qr-code-generator.com/wp-content/themes/qr/new_structure/markets/core_market_full/generator/dist/generator/assets/images/websiteQRCode_noFrame.png"
-                src={url}
-              />
+              <img style={{ width: "80%" }} src={url} />
             </div>
             <div
               style={{
                 width: "60%",
                 height: "100%",
-                // backgroundColor: "rebeccapurple",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-around",
@@ -152,7 +145,6 @@ function TurnOnTwoFa({ userid, username }) {
                     textAlign: "center",
                   }}
                   ref={twofacode}
-                  // placeholder="Type here the code"
                   type="text"
                 />
 

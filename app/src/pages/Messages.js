@@ -15,11 +15,6 @@ function Messages(props) {
         <div className="searchbar">
           <MessagesSearchBarComponent />
         </div>
-
-        {/* <div className="groups">
-          <GroupsComponent />
-        </div> */}
-
         <div className="people">
           <Persons
             myid={props.userdatas.id}
@@ -28,7 +23,7 @@ function Messages(props) {
         </div>
 
         <div className="main">
-          <ChatComponent myuserdatas={props.userdatas} />
+          <ChatComponent socket={props.socket} myuserdatas={props.userdatas} />
         </div>
       </div>
     </div>
@@ -36,35 +31,3 @@ function Messages(props) {
 }
 
 export default Messages;
-
-//
-{
-  /* <div className='main-container-header'>
-                <div className='main-container-header-content'>
-
-                  <div className='main-container-header-left'>
-                    <div className='main-container-header-avatar-container'>
-                      <img src={person1} style={{width: '75px', height: '75px', borderRadius: '50%'}} />
-                    </div>
-                    <div className='main-container-header-partner-datas'>
-                      <div className='main-container-header-partner-name'>Anil</div>
-                      <div className='main-container-header-partner-status'>Online - Last seen, 2.02pm</div>
-                    </div>
-                  </div>
-
-                  <div className='main-container-header-right'>
-                    <img src={telephone} style={{cursor: 'pointer'}}/>
-                    <img src={camera} style={{cursor: 'pointer'}}/>
-                    <img src={other} style={{cursor: 'pointer'}}/>
-                  </div>
-                </div>
-                <div className='header-devider-container'>
-                  <div className='header-devider'></div>
-                </div>
-              </div>
-              <div className='main-contianer-main'>
-                  <div className='main-container-messages'>
-                    
-                  </div>
-              </div> */
-}

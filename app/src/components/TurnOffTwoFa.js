@@ -21,7 +21,6 @@ function TurnOffTwoFa({ userid }) {
         key: inputref.current.value,
       })
       .then((res) => {
-        console.log(res.data);
         if (res.data.succes) {
           handleStartDisableTwoFa(false);
           changecheckedstate(false);
@@ -87,23 +86,17 @@ function TurnOffTwoFa({ userid }) {
               style={{
                 width: "40%",
                 height: "100%",
-                // backgroundColor: "green",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
               }}
             >
-              <img
-                style={{ width: "80%", marginBottom: 20 }}
-                // src="https://www.qr-code-generator.com/wp-content/themes/qr/new_structure/markets/core_market_full/generator/dist/generator/assets/images/websiteQRCode_noFrame.png"
-                src={openlock}
-              />
+              <img style={{ width: "80%", marginBottom: 20 }} src={openlock} />
             </div>
             <div
               style={{
                 width: "60%",
                 height: "100%",
-                // backgroundColor: "rebeccapurple",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-around",
@@ -134,7 +127,6 @@ function TurnOffTwoFa({ userid }) {
                     textAlign: "center",
                   }}
                   ref={inputref}
-                  // placeholder="Type here the code"
                   type="text"
                 />
 

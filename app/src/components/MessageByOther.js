@@ -1,7 +1,7 @@
 import React from "react";
 import { apiurl } from "../config/globalVariables";
 
-function MessageByOther({ avatar, text, date, last, imageurls }) {
+function MessageByOther({ avatar, text, date, last, imageurls, callback }) {
   return (
     <div className="main-container-message-by-other-container">
       <div className="main-container-message-by-other">
@@ -23,7 +23,8 @@ function MessageByOther({ avatar, text, date, last, imageurls }) {
             return (
               <div key={i} style={{ width: 300, height: 200, marginLeft: 70 }}>
                 <img
-                  style={{ width: "100%", height: "100%" }}
+                  onClick={() => callback(apiurl + "UsersProfileImg/" + i)}
+                  style={{ width: "100%", height: "100%", cursor: "pointer" }}
                   alt={"ImgNotFound"}
                   src={apiurl + "UsersProfileImg/" + i}
                 />

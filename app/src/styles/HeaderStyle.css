@@ -1,0 +1,20 @@
+@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;900&display=swap");
+
+.DeleteFriendStyle {
+  padding: 10px 20px;
+  font-family: "Roboto", sans-serif;
+  color: white;
+}
+
+.DeleteFriendContainer {
+  position: "absolute";
+  background-color: #6e00ff;
+  border-radius: 20px;
+  position: absolute;
+  z-index: 2;
+}
+
+.DeleteFriendContainer:hover {
+  background-color: red;
+  cursor: pointer;
+}

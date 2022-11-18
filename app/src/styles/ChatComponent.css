@@ -54,3 +54,26 @@
 .emoji-selector-panel::-webkit-scrollbar {
   display: none;
 }
+
+/* Img preview */
+
+.ImgPrview {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: inline-block;
+  width: 100vw;
+  height: 100vh;
+  /* background-color: gray; */
+  background-color: rgba(62, 61, 61, 0.7);
+  z-index: 100;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: none;
+  box-sizing: border-box;
+  padding: 20px;
+  /* filter: blur(8px); */
+  /* -webkit-filter: blur(8px); */
+  /* visibility: hidden; */
+}

@@ -17,12 +17,16 @@ import MainLayout from "./components/MainLayout";
 import SearchFriends from "./pages/SearchFriends";
 import AuthenticateTwoFa from "./pages/Auth/AuthenticateTwoFa";
 
+import io from "socket.io-client";
+
 export let handleLogin;
 export let handleTwoFaLogin;
 export let handleRegister;
 export let handleLogout;
 
 function App() {
+  const socket = io.connect(apiurl);
+  console.log("app render");
   const [user, setUser] = useState();
   const navigate = useNavigate();
   const [cookies, setCookie, removeCookie] = useCookies(["sessiontoken"]);
@@ -46,8 +50,8 @@ function App() {
   }, []);
 
   handleTwoFaLogin = (userdatas, token) => {
-    console.log(userdatas);
-    console.log(token);
+    //console.log(userdatas);
+    //console.log(token);
     setUser(userdatas);
     setCookie("sessiontoken", token);
     toast.success("Succesful login!");
@@ -62,7 +66,7 @@ function App() {
         Password: password,
       })
       .then((res) => {
-        console.log(res.data);
+        //console.log(res.data);
         if (res.data.succes) {
           if (res.data.twofalogin) {
             navigate("/authenticate/" + res.data.Token);
@@ -99,7 +103,7 @@ function App() {
         myid: userdatas.id,
       })
       .then((res) => {
-        console.log(res.data);
+        //console.log(res.data);
         if (res.data.succes) {
           setUser(false);
         }
@@ -123,7 +127,10 @@ function App() {
           <Route element={<MainLayout userdatas={user} />}>
             {/* <Route path="/" element={(window.location.href = "/home")} /> */}
             <Route path="/" element={<Home />} />
-            <Route path="/message" element={<Messages userdatas={user} />} />
+            <Route
+              path="/message"
+              element={<Messages userdatas={user} socket={socket} />}
+            />
             <Route
               path="/search"
               element={<SearchFriends userdatas={user} />}

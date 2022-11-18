@@ -42,7 +42,7 @@ export let avatarchanged;
 
 function Navbar(props) {
   const [avatrurl, setAvatarUrl] = useState(props.userdatas.AvatarURL);
-  // console.log("props", props.userdatas);
+  // //console.log("props", props.userdatas);
   avatarchanged = (url) => {
     setAvatarUrl(url);
   };
@@ -120,7 +120,6 @@ function Navbar(props) {
                       key={`Index_${index}`}
                       className="responsive-navbar-menu"
                     >
-                      {/* <img src={route.icon} width="50px" height="50px" /> */}
                       {route.name}
                     </div>
                   );
@@ -130,20 +129,11 @@ function Navbar(props) {
                     onClick={() => navigate(route.url)}
                     key={`Index_${index}`}
                     className="responsive-navbar-menu"
-                    // id={
-                    //   route.name === window.location.pathname ? "selected" : ""
-                    // }
                   >
                     {route.name}
-                    {/* <img src={route.icon} /> */}
                   </div>
                 );
               })}
-              {/* <div className="responsive-navbar-menu">Home</div>
-              <div className="responsive-navbar-menu">Messages</div>
-              <div className="responsive-navbar-menu">Search Users</div>
-              <div className="responsive-navbar-menu">Settings</div>
-              <div className="responsive-navbar-menu">Logout</div> */}
             </div>
           </div>
         )}

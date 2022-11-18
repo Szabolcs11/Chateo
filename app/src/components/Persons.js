@@ -11,6 +11,7 @@ import axios from "axios";
 import { apiurl } from "../config/globalVariables";
 import {
   createNewGroup,
+  handleDeleteChat,
   joinAllPrivateConversation,
   selectPerson,
 } from "./ChatComponent";
@@ -18,6 +19,8 @@ import {
 export let changeusernotificationstatus;
 
 export let personsforceupdate;
+
+export let handleFriendDelete;
 
 export let searchchats;
 
@@ -38,11 +41,7 @@ function Persons(props) {
         myid: props.myid,
       })
       .then((res) => {
-        // console.log(res.data);
         if (res.data.succes) {
-          // res.data.frienddatas[0].notification = 1;
-          // setFriends(res.data.frienddatas);
-          // setGroups(res.data.groups);
           joinAllPrivateConversation(res.data.chats);
           setChats(res.data.chats);
           setSearchChats(res.data.chats);
@@ -51,13 +50,9 @@ function Persons(props) {
   }, []);
 
   changestatusofuser = (roomkey, status) => {
-    // console.log(roomkey, status);
-    // console.log(searchChats);
     let temp = searchChats;
     temp.map((e) => {
       if (e.RoomKey == roomkey) {
-        // console.log("Founded!");
-        // console.log(e);
         var today = new Date();
         let date =
           today.getFullYear() +
@@ -71,8 +66,6 @@ function Persons(props) {
           today.getMinutes() +
           ":" +
           today.getSeconds();
-        // console.log(e.Status);
-        // console.log(date);
         let info = {
           Status: status,
           LastUpdate: date,
@@ -80,58 +73,9 @@ function Persons(props) {
         e.Status = JSON.stringify(info);
       }
     });
-    // console.log(searchChats[0].Name);
-    // console.log(searchChats[0].Status);
     setSearchChats(temp);
     forceUpdate();
   };
-
-  // changestatusofuser = (st, username) => {
-  //   // console.log("--");
-  //   console.log(username + " => " + st);
-  //   let temp = chats;
-  //   temp.filter((e) => {
-  //     if (e.Name == username) {
-  //       console.log(username + " ==> " + st.toString());
-  //       e.Status = st;
-  //     }
-  //     return e;
-  //   });
-  //   console.log(temp);
-  //   setChats(temp);
-  //   forceUpdate();
-
-  //   // console.log(temp);
-  //   // setSearchChats(temp);
-
-  //   // console.log(temp);
-  //   // console.log(key);
-  //   // console.log("Before");
-  //   // console.log(temp);
-  //   // temp.filter((e) => {
-  //   //   // console.log(e.Name, key.Name, props.username);
-  //   //   // if (e.Name == props.username) {
-  //   //   // console.log("status", st);
-  //   //   // if (st == "Online") {
-  //   //   //   e.Status = "Away";
-  //   //   // } else if (st == "Away") {
-  //   //   //   e.Status = "Online";
-  //   //   // } else {
-  //   //   //   e.Status = "Offline";
-  //   //   // }
-  //   //   // console.log("equal");
-  //   //   // e.Status = st;
-  //   //   // e.Status = "abcdef";
-  //   //   // }
-  //   //   return e;
-  //   // });
-
-  //   // setSearchChats(temp);
-  //   // forceUpdate();
-
-  //   // console.log("After");
-  //   // console.log(temp);
-  // };
 
   searchchats = (value) => {
     if (value == "") {
@@ -149,6 +93,16 @@ function Persons(props) {
     forceUpdate();
   };
 
+  handleFriendDelete = (data) => {
+    console.log(searchChats);
+    const temp = searchChats;
+    const res = temp.filter((e) => e.UserID != data);
+    setSearchChats(res);
+    handleDeleteChat();
+    forceUpdate();
+    console.log(res);
+  };
+
   personsforceupdate = () => {
     axios
       .post(apiurl + "getfriends", {
@@ -156,26 +110,23 @@ function Persons(props) {
       })
       .then((res) => {
         if (res.data.succes) {
+          console.log(res.data.chats);
           joinAllPrivateConversation(res.data.chats);
           setChats(res.data.chats);
+          forceUpdate();
         }
       });
   };
 
   changeusernotificationstatus = (roomkey) => {
-    // console.log(roomkey);
-    // console.log("friends");
-    // console.log(friends);
     let tempfriends = chats;
     tempfriends.filter((friend) => {
       if (friend.RoomKey == roomkey) {
         friend.Notification = friend.Notification + 1;
-        // console.log(friend);
       }
       return friend;
     });
     setFriends(tempfriends);
-    console.log(friends);
     forceUpdate();
   };
 
@@ -190,10 +141,8 @@ function Persons(props) {
     });
     forceUpdate();
     setChats(tempchats);
-    // setFriends(tempfriends);
   };
 
-  // if (!friends) return null;
   return (
     <div className="people-container">
       <div className="people-container-title">Chats</div>
@@ -255,10 +204,6 @@ function Persons(props) {
                   name={c.Name}
                   avatar={c.AvatarURL}
                   notification={c.Notification ? c.Notification : 0}
-                  // status={c.Status}
-                  // date={"Today, 9.52"}
-                  // lastmessage={p.lastmessage}
-                  // seen={p.seen}
                 />
               </div>
               {index < chats.length - 1 && (
@@ -270,8 +215,6 @@ function Persons(props) {
             </Fragment>
           );
         })}
-
-        {/* <TabComponent name={'Friend Forever'} date={'Today, 9.52'} avatar={person1} lastmessage={'HaHaHaHa!'} seen={true} /> */}
       </div>
     </div>
   );

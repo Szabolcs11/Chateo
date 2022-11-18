@@ -17,7 +17,7 @@ export let handleStartDisableTwoFa;
 export let twofaactivated;
 
 function Settings(props) {
-  // console.log(props);
+  // //console.log(props);
   const [currPass, setCurrPass] = useState();
   const [newPass, setNewPass] = useState();
   const [newPassAgn, setNewPassAgn] = useState();
@@ -34,7 +34,7 @@ function Settings(props) {
   };
 
   handleStartDisableTwoFa = (state) => {
-    // console.log("most kene jelenjen");
+    // //console.log("most kene jelenjen");
     setDisableTwoFa(state);
   };
 
@@ -125,10 +125,8 @@ function Settings(props) {
               display: "flex",
               flexDirection: "column",
               textAlign: "center",
-              // width: 500,
               maxWidth: 500,
               height: 400,
-              // backgroundColor: "red",
               alignItems: "center",
             }}
           >

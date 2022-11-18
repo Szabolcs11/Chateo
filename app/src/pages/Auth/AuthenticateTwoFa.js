@@ -9,15 +9,12 @@ import { handleTwoFaLogin } from "../../App";
 
 function AuthenticateTwoFa() {
   let { key } = useParams();
-  //   console.log(key);
   const [code, setCode] = useState();
   const navigate = useNavigate();
   useEffect(() => {
     if (code == undefined || code == "" || code == " ") return;
     handleVerifyCode();
   }, [code]);
-
-  // useEffect(() => {}, []);
 
   const handleVerifyCode = () => {
     axios
@@ -26,7 +23,6 @@ function AuthenticateTwoFa() {
         token: code,
       })
       .then((res) => {
-        console.log(res.data);
         if (res.data.urlerror) {
           navigate("/");
           return;
@@ -34,7 +30,6 @@ function AuthenticateTwoFa() {
         if (res.data.succes) {
           handleTwoFaLogin(res.data.user, res.data.token);
         }
-        // console.log("a");
       });
   };
 

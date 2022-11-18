@@ -8,12 +8,10 @@ import {
 import twofa from "./../assets/images/TwoFactor.png";
 import style from "./../styles/TwoFaComponent.css";
 import TurnOnTwoFa from "./TurnOnTwoFa";
-// import style from "../styles/ChatComponent.css";
 
 export let changecheckedstate;
 
 function TwoFaComponent({ userid }) {
-  // console.log(userid);
   const [checked, setChecked] = useState(false);
   useEffect(() => {
     axios
@@ -30,7 +28,6 @@ function TwoFaComponent({ userid }) {
   // Lekerni van e 2fa ja aktivalva
 
   const handleChange = (ch) => {
-    console.log(ch);
     if (ch == true) {
       handleStartEnableTwoFa(ch);
     } else {
@@ -97,7 +94,6 @@ function TwoFaComponent({ userid }) {
                   type="checkbox"
                   checked={checked}
                   onChange={() => {
-                    // setChecked(!checked);
                     handleChange(!checked);
                   }}
                 />
@@ -107,7 +103,6 @@ function TwoFaComponent({ userid }) {
           </div>
         </div>
       </div>
-      {/* {true && <TurnOnTwoFa />} */}
     </>
   );
 }

@@ -16,7 +16,6 @@ function SearchFriends(props) {
   const [users, setUsers] = useState([]);
   const [searchUsers, setSearchUsers] = useState([]);
   useEffect(() => {
-    console.log("1");
     axios
       .post(apiurl + "getallusers", {
         myid: props.userdatas.id,
@@ -25,20 +24,17 @@ function SearchFriends(props) {
         if (res.data.succes) {
           setUsers(res.data.users);
           setSearchUsers(res.data.users);
-          console.log(res.data);
         }
       });
   }, []);
 
   //Get
   useEffect(() => {
-    console.log("2");
     axios
       .post(apiurl + "getincomingfriendrequest", {
         myid: props.userdatas.id,
       })
       .then((res) => {
-        console.log(res.data);
         if (res.data.succes) {
           setIncomUsers(res.data.users);
         }
@@ -52,7 +48,6 @@ function SearchFriends(props) {
         targetid: id,
       })
       .then((res) => {
-        console.log(res.data);
         if (res.data.succes) {
           toast.success(res.data.message);
         } else {
@@ -62,14 +57,13 @@ function SearchFriends(props) {
   };
 
   const handleFriendRequest = (cb) => {
-    console.log(cb);
     axios
       .post(apiurl + "handlefriendrequest", {
         myid: props.userdatas.id,
         data: cb,
       })
       .then((res) => {
-        console.log(res.data);
+        //console.log(res.data);
         if (res.data.succes) {
           toast.success(res.data.message);
           let temp = incomUsers;
@@ -85,7 +79,7 @@ function SearchFriends(props) {
   };
 
   const searchUser = (a) => {
-    // console.log(a.target.value);
+    // //console.log(a.target.value);
     if (a.target.value == "") {
       setSearchUsers(users);
     } else {
@@ -98,11 +92,6 @@ function SearchFriends(props) {
         }
       });
       setSearchUsers(newarr);
-
-      // let newarr = temp.filter((e) =>
-      //   e.Username.toLowerCase().incudes(a.target.value.toLowerCase())
-      // );
-      // console.log(newarr);
     }
   };
   return (
@@ -161,8 +150,6 @@ function SearchFriends(props) {
                       avatar={u.AvatarURL}
                       incomcb={(cb) => {
                         handleFriendRequest(cb);
-                        // console.log(cb);
-                        // handleAddFriend(cb);
                       }}
                     />
                   );
@@ -170,8 +157,6 @@ function SearchFriends(props) {
               </div>
             </div>
           </div>
-          {/* <div style={{ height: 10 }}></div>
-          <div className="outgoingfriendrequests"></div> */}
         </div>
       </div>
     </div>

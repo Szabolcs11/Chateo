@@ -33,7 +33,6 @@ function UserDatasComponent({ UserID, Avatar, Username }) {
   return (
     <div
       style={{
-        // width: 500,
         maxWidth: 500,
         height: 200,
         backgroundColor: "#6E00FF",
@@ -63,7 +62,7 @@ function UserDatasComponent({ UserID, Avatar, Username }) {
             alt="ImgNotFound"
             src={whiteplus}
             onClick={() => {
-              console.log();
+              //console.log();
             }}
             style={{
               position: "absolute",

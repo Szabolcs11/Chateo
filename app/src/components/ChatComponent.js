@@ -3,6 +3,7 @@ import io from "socket.io-client";
 import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import close from "./../assets/svgs/close.svg";
 
 import person1 from "../assets/images/person1.png";
 import person2 from "../assets/images/person2.png";
@@ -18,7 +19,7 @@ import { AiOutlineCloseCircle } from "react-icons/ai";
 
 import MessageByMe from "./MessageByMe";
 import MessageByOther from "./MessageByOther";
-import HeaderComponent, { updatestatus } from "./HeaderComponent";
+import HeaderComponent, { updateheaderstatus } from "./HeaderComponent";
 
 import { apiurl, emojis } from "../config/globalVariables";
 import {
@@ -38,6 +39,8 @@ import blackx from "../assets/svgs/blackx.svg";
 import style from "../styles/ChatComponent.css";
 
 import useWindowFocus from "use-window-focus";
+
+export let handleDeleteChat;
 
 // import { apiurl } from "./../src/config/globalVariables";
 
@@ -112,14 +115,16 @@ export let joinAllPrivateConversation;
 export let createNewGroup;
 
 function ChatComponent(props) {
+  console.log(props);
   const [, updateState] = React.useState();
   const forceUpdate = React.useCallback(() => updateState({}), []);
-  const socket = io("http://localhost:2004/");
+  // const socket = io("http://localhost:2004/");
   // const socket = io.connect(apiurl);
   // const socket = io.connect("https://api.kekenj-sabolc.me");
 
   const [partnerdatas, setPartnerDatas] = useState();
   const [messages, setMessages] = useState([]);
+  const [imagePreview, setImagePreview] = useState([]);
 
   const [attachments, setAttachmentUrls] = useState(false);
 
@@ -160,8 +165,8 @@ function ChatComponent(props) {
   const initBeforeUnLoad = (showExitPrompt) => {
     window.onbeforeunload = (event) => {
       // Show prompt based on state
-      console.log("1");
-      callsocket();
+      // console.log("1");
+      // callsocket(); // Away hez
       if (showExitPrompt) {
         const e = event || window.event;
         e.preventDefault();
@@ -207,129 +212,39 @@ function ChatComponent(props) {
   //   });
   // }, []);
 
-  const callsocket = async () => {
-    console.log("b");
-    socket.emit("updatestate", "Away", props.myuserdatas.Username, (cb) => {
-      console.log(cb);
-    });
-    console.log("c");
-  };
-  // \\
-
-  // End of Testing 10-03
-
-  // const changemystatus = (status) => {
-  //   // console.log(status);
-  //   // console.log(chatKeys);
-  //   socket.emit(
-  //     "changemystatus",
-  //     status,
-  //     props.myuserdatas.Username,
-  //     chatKeys,
-  //     (cb) => {
-  //       console.log(cb);
-  //     }
-  //   );
-  // };
-
-  // const handleStatusChange = (focused, keys) => {
-  //   if (keys) {
-  //     // console.log(focused);
-  //     // console.log(keys);
-  //     // console.log(props.myuserdatas.Username);
-  //     if (focused) {
-  //       socket.emit(
-  //         "changemystatus",
-  //         "Online",
-  //         props.myuserdatas.Username,
-  //         keys,
-  //         (cb) => {
-  //           // console.log(cb);
-  //         }
-  //       );
-  //     } else {
-  //       socket.emit(
-  //         "changemystatus",
-  //         "Away",
-  //         props.myuserdatas.Username,
-  //         keys,
-  //         (cb) => {
-  //           // console.log(cb);
-  //         }
-  //       );
-  //     }
-  //   }
-  // };
-
-  // useEffect(() => {
-  //   socket.on("userchangedstatus", (st, chat, username) => {
-  //     if (username != props.myuserdatas.Username) {
-  //       changestatusofuser(st, username);
-  //     }
-  //   });
-  // }, [socket]);
-
-  // useEffect(() => {
-  //   if (socket == null) return;
-  //   socket.on("userchangedstatus", (status, chat, username) => {
-  //     if (chat.Name == props.myuserdatas.Username) {
-  //       console.log(chat, username, status);
-  //       let temp = partnerdatas;
-  //       console.log(temp);
-  //       // temp.Status = status;
-  //       // partnerdatas.Status
-  //       // setPartnerDatas(temp);
-  //       // changestatusofuser(status, username);
-  //     }
-
-  //     // console.log("StatusChanged", status, key);
-  //     // console.log("-");
-  //     // let currentrk = localStorage.getItem("RoomKey") || "";
-  //     // console.log("currentrk", currentrk);
-  //     // // console.log(currentrk);
-  //     // // console.log(key.RoomKey);
-  //     // if (props.myuserdatas.Username == key.Name) {
-  //     // console.log(key.Name + " Changed status to " + status);
-  //     // changestatusofuser(key, status);
-  //     // }
-  //   });
-  // }, [socket]);
-
   useEffect(() => {
-    socket.on("userdisconencted", (status, name, roomkey) => {
-      // console.log(status, name, roomkey);
-      changestatusofuser(roomkey, status);
-      let currentRKey = localStorage.getItem("RoomKey") || "";
-      if (currentRKey == roomkey) {
-        // setCurrentRoomStatus(status);
-        // console.log(partnerdatas);
-        var today = new Date();
-        let date =
-          today.getFullYear() +
-          "-" +
-          (today.getMonth() + 1) +
-          "-" +
-          today.getDate() +
-          " " +
-          today.getHours() +
-          ":" +
-          today.getMinutes() +
-          ":" +
-          today.getSeconds();
-        // console.log(e.Status);
-        // console.log(date);
-        let info = {
-          Status: status,
-          LastUpdate: date,
-        };
-        // e.Status = JSON.stringify(info);
-        updatestatus(status);
-        // updatestatus(JSON.stringify(info));
-        // console.log("setteltem");
-        forceUpdate();
+    props.socket.on("userdisconencted", (status, name, roomkey, changerid) => {
+      if (changerid != props.myuserdatas.id) {
+        changestatusofuser(roomkey, status);
+        let currentRKey = localStorage.getItem("RoomKey") || "";
+        if (currentRKey == roomkey) {
+          var today = new Date();
+          let date =
+            today.getFullYear() +
+            "-" +
+            (today.getMonth() + 1) +
+            "-" +
+            today.getDate() +
+            " " +
+            today.getHours() +
+            ":" +
+            today.getMinutes() +
+            ":" +
+            today.getSeconds();
+          let info = {
+            Status: status,
+            LastUpdate: date,
+          };
+          updateheaderstatus(status);
+          forceUpdate();
+        }
       }
     });
-  }, [socket]);
+  }, [props.socket]);
+
+  handleDeleteChat = () => {
+    setPartnerDatas(null);
+  };
 
   joinAllPrivateConversation = (chats) => {
     localStorage.clear("RoomKey");
@@ -338,20 +253,29 @@ function ChatComponent(props) {
       if (e.UserID) {
         keys.push(e); // Here can add the entire chat datas
       }
-      // console.log(e);
-      socket.emit(
-        "joinroom",
-        e.RoomKey,
-        true,
-        chats,
-        props.myuserdatas.id,
-        (cb) => {
-          // console.log(cb);
-        }
-      );
+      if (e.UserID) {
+        props.socket.emit(
+          "joinroom",
+          e.RoomKey,
+          true,
+          chats,
+          props.myuserdatas.id,
+          true,
+          (cb) => {}
+        );
+      } else {
+        props.socket.emit(
+          "joinroom",
+          e.RoomKey,
+          true,
+          chats,
+          props.myuserdatas.id,
+          false,
+          (cb) => {}
+        );
+      }
     });
     setChatKeys(keys);
-    // handleStatusChange(windowFocused, keys);
   };
 
   const loadMessages = (messagedatas) => {
@@ -369,30 +293,18 @@ function ChatComponent(props) {
   };
 
   selectPerson = (chatdatas) => {
-    console.log(chatdatas);
     setMessages([]);
-    socket.emit("getroommessages", chatdatas.id, (cb) => {
-      console.log("selected");
-      // console.log("geroommessages");
-      // console.log(cb);
+    props.socket.emit("getroommessages", chatdatas.id, (cb) => {
       if (chatdatas.Status) {
         let st = JSON.parse(chatdatas.Status);
-        console.log(st.Status);
-        updatestatus(st.Status);
+        updateheaderstatus(st.Status);
       }
       if (cb.succes) {
-        // console.log(chatdatas);
-        // console.log(cb.messagedatas);
-        // let obj = cb.messagedatas[17].ImageIDs.split(",");
-        // console.log(obj);
         loadMessages(cb.messagedatas);
-        // console.log("persondatas", persondatas);
       }
       joinroom(chatdatas.RoomKey);
     });
     setPartnerDatas(chatdatas);
-    // setCurrentRoomStatus(chatdatas.Status || "");
-    // console.log(chatdatas);
   };
 
   useEffect(() => {
@@ -402,78 +314,51 @@ function ChatComponent(props) {
   const [currentRoomKey, setCurrentRoomKey] = useState();
 
   const joinroom = (RoomKey) => {
-    // console.log(RoomKey);
-    socket.emit(
+    props.socket.emit(
       "joinroom",
       RoomKey,
       false,
       false,
       props.myuserdatas.id,
+      false,
       (cb) => {
-        // setCurrentRoomKey((currentKey) => RoomKey);
-        // setCurrentRoomKey((currentKey) => ({ [currentKey]: [messages] }));
         setCurrentRoomKey(RoomKey);
-        //local storage
         localStorage.setItem("RoomKey", RoomKey);
       }
     );
   };
 
   useEffect(() => {
-    if (socket == null) return;
-    socket.on("recivemessage", (data) => {
+    if (props.socket == null) return;
+    props.socket.on("recivemessage", (data) => {
       let currentRKey = localStorage.getItem("RoomKey") || "";
       if (data.RoomKey == currentRKey) {
         console.log(data.length);
-        // for (let i = 0; i < data.length; i++) {
         for (let j = 0; j < emojis.length; j++) {
           data.Text = data.Text.replaceAll(emojis[j][1], emojis[j][0]);
         }
-        // }
-        console.log(data);
         setMessages((prevMessage) => [...prevMessage, data]);
       } else {
         changeusernotificationstatus(data.RoomKey);
-        // console.log("Notification Sender: " + data.Username, data.RoomKey);
       }
     });
-  }, [socket]);
+  }, [props.socket]);
 
   const inputtextchange = (e) => {
-    // console.log(e.target.value);
-    // currentMessage.current.value = currentMessage.current.value + "x";
-    // console.log("len", currentMessage.current.value.length);
-    // currentMessage.target.value.map((e) => {
-    //   console.log(e);
-    // });
-    // for (let i = 0; i < texttoemoji.length; i++) {
-    //   currentMessage.current.value = currentMessage.current.value.replaceAll(
-    //     texttoemoji[i][1],
-    //     texttoemoji[i][0]
-    //   );
-    // }
     for (let i = 0; i < emojis.length; i++) {
       currentMessage.current.value = currentMessage.current.value.replaceAll(
         emojis[i][1],
         emojis[i][0]
       );
     }
-    // console.log("elem", currentMessage.current.value[1]);
-    // currentMessage.current.value = currentMessage.current.value.replace(
-    //   ":D",
-    //   "b"
-    // );
-    // console.log(currentMessage.current.value);
   };
 
   const sendMessage = async () => {
     if (currentMessage.current.value) {
       let cbmessage = currentMessage.current.value;
-      // console.log(cbmessage);
       for (let i = 0; i < emojis.length; i++) {
         cbmessage = cbmessage.replaceAll(emojis[i][0], emojis[i][1]);
       }
-      // console.log(cbmessage);
       var imagesurls = [];
       if (ImageURL && ImageURL.length > 0) {
         for (let i = 0; i < ImageURL.length; i++) {
@@ -488,7 +373,7 @@ function ChatComponent(props) {
         }
       }
 
-      socket.emit(
+      props.socket.emit(
         "sendmessage",
         partnerdatas.RoomKey,
         cbmessage,
@@ -521,7 +406,6 @@ function ChatComponent(props) {
                 Text: messagetext,
                 Username: Username,
                 ImageIDs: ImageIDs ? ImageIDs.toString() : "",
-                // ImageIDs: ImageUrls.toString(),
               },
             ]);
             currentMessage.current.value = "";
@@ -546,7 +430,7 @@ function ChatComponent(props) {
         }
       }
 
-      socket.emit(
+      props.socket.emit(
         "sendmessage",
         partnerdatas.RoomKey,
         currentMessage.current.value || "",
@@ -576,7 +460,6 @@ function ChatComponent(props) {
                 Text: Text,
                 Username: Username,
                 ImageIDs: ImageIDs ? ImageIDs.toString() : "",
-                // ImageIDs: ImageUrls.toString(),
               },
             ]);
             currentMessage.current.value = "";
@@ -595,7 +478,6 @@ function ChatComponent(props) {
         array.push(i);
       }
     });
-    // console.log(array)
     setImageURL(array);
   };
 
@@ -681,15 +563,12 @@ function ChatComponent(props) {
           style={{
             padding: 20,
             display: "flex",
-            // justifyContent: "center",
             alignItems: "center",
             flexDirection: "column",
             height: "100%",
             position: "relative",
           }}
         >
-          {/* <div></div> */}
-
           {selectUsers && (
             <div
               style={{
@@ -770,7 +649,6 @@ function ChatComponent(props) {
                               style={{
                                 width: 35,
                                 height: 35,
-                                // cursor: "pointer",
                               }}
                               src={blackx}
                             />
@@ -789,7 +667,6 @@ function ChatComponent(props) {
                               style={{
                                 width: 35,
                                 height: 35,
-                                // cursor: "pointer",
                               }}
                               src={plus}
                             />
@@ -899,29 +776,7 @@ function ChatComponent(props) {
 
               <div
                 style={{ paddingTop: 50, fontSize: 30, textAlign: "center" }}
-              >
-                {/* <div>Members:</div>
-                <div style={{ padding: 20 }}>
-                  <div>
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        width: 300,
-                        margin: 15,
-                      }}
-                    >
-                      <img
-                        style={{ width: 50, height: 50, borderRadius: "50%" }}
-                        src={apiurl + "UsersProfileImg/DefaultAvatar.png"}
-                      />
-                      <div>Szabolcs</div>
-                      <img style={{ cursor: "pointer" }} src={blackx} />
-                    </div>
-                  </div>
-                </div> */}
-              </div>
+              ></div>
               <div style={{ paddingTop: 50 }}>
                 <div
                   onClick={() => setSelectUsers(!selectUsers)}
@@ -982,24 +837,47 @@ function ChatComponent(props) {
         justifyContent: "space-between",
       }}
     >
+      {imagePreview && imagePreview.length > 0 ? (
+        <div className="ImgPrview">
+          <div
+            onClick={() => setImagePreview([])}
+            style={{
+              position: "absolute",
+              top: 10,
+              right: 10,
+              cursor: "pointer",
+            }}
+          >
+            <img
+              style={{
+                width: "30px",
+                height: "30px",
+              }}
+              src={close}
+            />
+          </div>
+          <img
+            style={{ maxWidth: "100%", maxHeight: "100%" }}
+            src={imagePreview}
+          />
+        </div>
+      ) : null}
       <div style={{ height: "20%" }}>
         {partnerdatas.Status ? (
           <HeaderComponent
+            myid={props.myuserdatas.id}
             partnername={partnerdatas.Name || ""}
             avatar={partnerdatas.AvatarURL || ""}
             status={JSON.parse(partnerdatas.Status).Status}
             partnerid={partnerdatas.UserID || ""}
-            // status={currentRoomStatus}
-            // status={"Online - Last seen, 2.02pm"}
           />
         ) : (
           <HeaderComponent
+            myid={props.myuserdatas.id}
             partnername={partnerdatas.Name || ""}
             avatar={partnerdatas.AvatarURL || ""}
             status={""}
             partnerid={partnerdatas.UserID || ""}
-            // partnerid={currentRoomStatus}
-            // status={"Online - Last seen, 2.02pm"}
           />
         )}
       </div>
@@ -1017,7 +895,9 @@ function ChatComponent(props) {
                         date={m.Date}
                         last={false}
                         imageurls={m.ImageIDs ? m.ImageIDs.split(",") : ""}
-                        // imageurls={m.ImageIDs.split(",") || ""}
+                        callback={(url) => {
+                          console.log(url);
+                        }}
                       />
                     );
                   }
@@ -1029,6 +909,9 @@ function ChatComponent(props) {
                     date={m.Date}
                     last={true}
                     imageurls={m.ImageIDs ? m.ImageIDs.split(",") : ""}
+                    callback={(url) => {
+                      setImagePreview(url);
+                    }}
                   />
                 );
               } else {
@@ -1042,6 +925,9 @@ function ChatComponent(props) {
                         avatar={m.AvatarURL}
                         last={false}
                         imageurls={m.ImageIDs ? m.ImageIDs.split(",") : ""}
+                        callback={(url) => {
+                          setImagePreview(url);
+                        }}
                       />
                     );
                   }
@@ -1054,6 +940,9 @@ function ChatComponent(props) {
                     avatar={m.AvatarURL}
                     last={true}
                     imageurls={m.ImageIDs ? m.ImageIDs.split(",") : ""}
+                    callback={(url) => {
+                      setImagePreview(url);
+                    }}
                   />
                 );
               }
@@ -1072,7 +961,6 @@ function ChatComponent(props) {
         <div
           style={{
             height: "100%",
-            // padding: "2%",
             position: "relative",
             width: "99%",
           }}
@@ -1081,11 +969,9 @@ function ChatComponent(props) {
             style={{
               width: "100%",
               height: "100%",
-              // backgroundColor: "green",
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
-              // gap: 20,
             }}
           >
             {ImageURL && ImageURL.length > 0 && (
@@ -1107,8 +993,6 @@ function ChatComponent(props) {
                     style={{
                       width: "100%",
                       height: "100%",
-                      // backgroundColor: "red",
-                      // padding: "1%",
                       gap: "2%",
                       display: "flex",
                       flexWrap: "wrap",
@@ -1151,7 +1035,6 @@ function ChatComponent(props) {
             <div
               style={{
                 width: "88%",
-                // backgroundColor: "yellow",
                 backgroundColor: "#EFF6FC",
                 height: "100%",
                 display: "flex",
@@ -1169,7 +1052,6 @@ function ChatComponent(props) {
               />
               <div
                 style={{
-                  // backgroundColor: "greenyellow",
                   width: "85%",
                   height: "100%",
                   display: "flex",
@@ -1188,7 +1070,6 @@ function ChatComponent(props) {
               </div>
               <div
                 style={{
-                  // backgroundColor: "azure",
                   height: "100%",
                   width: "10%",
                   display: "flex",
@@ -1251,76 +1132,6 @@ function ChatComponent(props) {
                             </div>
                           );
                         })}
-                        {/* <div className="emojiselector-item">😀</div>
-                        <div className="emojiselector-item">😀</div>
-                        <div className="emojiselector-item">😀</div>
-                        <div className="emojiselector-item">😀</div>
-                        <div className="emojiselector-item">😀</div>
-                        <div className="emojiselector-item">😀</div>
-                        <div className="emojiselector-item">😀</div>
-                        <div className="emojiselector-item">😀</div>
-                        <div className="emojiselector-item">😀</div>
-                        <div className="emojiselector-item">😀</div>
-                        <div className="emojiselector-item">😀</div>
-                        <div className="emojiselector-item">😀</div>
-                        <div className="emojiselector-item">😀</div>
-                        <div className="emojiselector-item">😀</div>
-                        <div className="emojiselector-item">😀</div>
-                        <div className="emojiselector-item">😀</div>
-                        <div className="emojiselector-item">😀</div>
-                        <div className="emojiselector-item">😀</div>
-                        <div className="emojiselector-item">😀</div>
-                        <div className="emojiselector-item">😀</div>
-                        <div className="emojiselector-item">😀</div>
-                        <div className="emojiselector-item">😀</div>
-                        <div className="emojiselector-item">😀</div>
-                        <div className="emojiselector-item">😀</div>
-                        <div className="emojiselector-item">😀</div>
-                        <div className="emojiselector-item">😀</div>
-                        <div className="emojiselector-item">😀</div>
-                        <div className="emojiselector-item">😀</div>
-                        <div className="emojiselector-item">😀</div>
-                        <div className="emojiselector-item">😀</div>
-                        <div className="emojiselector-item">😀</div>
-                        <div className="emojiselector-item">😀</div>
-                        <div className="emojiselector-item">😀</div>
-                        <div className="emojiselector-item">😀</div>
-                        <div className="emojiselector-item">😀</div>
-                        <div className="emojiselector-item">😀</div>
-                        <div className="emojiselector-item">😀</div>
-                        <div className="emojiselector-item">😀</div>
-                        <div className="emojiselector-item">😀</div>
-                        <div className="emojiselector-item">😀</div>
-                        <div className="emojiselector-item">😀</div>
-                        <div className="emojiselector-item">😀</div>
-                        <div className="emojiselector-item">😀</div>
-                        <div className="emojiselector-item">😀</div>
-                        <div className="emojiselector-item">😀</div>
-                        <div className="emojiselector-item">😀</div>
-                        <div className="emojiselector-item">😀</div>
-                        <div className="emojiselector-item">😀</div>
-                        <div className="emojiselector-item">😀</div>{" "}
-                        <div className="emojiselector-item">😀</div>
-                        <div className="emojiselector-item">😀</div>
-                        <div className="emojiselector-item">😀</div>
-                        <div className="emojiselector-item">😀</div>
-                        <div className="emojiselector-item">😀</div>
-                        <div className="emojiselector-item">😀</div>
-                        <div className="emojiselector-item">😀</div>
-                        <div className="emojiselector-item">😀</div>
-                        <div className="emojiselector-item">😀</div>
-                        <div className="emojiselector-item">😀</div>
-                        <div className="emojiselector-item">😀</div>
-                        <div className="emojiselector-item">😀</div>
-                        <div className="emojiselector-item">😀</div>
-                        <div className="emojiselector-item">😀</div>
-                        <div className="emojiselector-item">😀</div>
-                        <div className="emojiselector-item">😀</div>
-                        <div className="emojiselector-item">😀</div>
-                        <div className="emojiselector-item">😀</div>
-                        <div className="emojiselector-item">😀</div>
-                        <div className="emojiselector-item">😀</div>
-                        <div className="emojiselector-item">😀</div> */}
                       </div>
                     </div>
                   </div>
@@ -1336,146 +1147,9 @@ function ChatComponent(props) {
               </div>
             </div>
           </div>
-          {/* <div className="main-container-messages-bottom">
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              width: "100%",
-            }}
-          >
-            <div className="main-container-messages-bottom-main">
-              <div className="main-container-messages-bottom-container">
-                <div className="main-container-messages-bottom-container-left">
-                  <img
-                    src={attachment}
-                    style={{ width: "42px", height: "42px", cursor: "pointer" }}
-                  />
-                  <input
-                    className="main-bottom-input"
-                    type="text"
-                    placeholder="Type your message here..."
-                    style={{ border: "none", outline: "none" }}
-                    ref={currentMessage}
-                  />
-                </div>
-                <img
-                  src={smile}
-                  style={{ width: "42px", height: "42px", cursor: "pointer" }}
-                />
-              </div>
-            </div>
-            <div
-              className="main-bottom-send-button"
-              onClick={() => sendMessage()}
-            >
-              <img src={send} />
-            </div>
-          </div>
-        </div> */}
         </div>
       </div>
     </div>
-    // <div className="main-container">
-    //   <HeaderComponent
-    //     partnername={partnerdatas.Username || ""}
-    //     avatar={partnerdatas.AvatarURL || ""}
-    //     status={"Online - Last seen, 2.02pm"}
-    //   />
-    //   <div className="main-container-messages">
-    //     <div className="main-container-messages-main">
-    //       <div className="main-container-messages-content">
-    //         {messages.map((m, index) => {
-    //           if (m.SenderID === props.myuserdatas.id) {
-    //             if (messages[index + 1]) {
-    //               if (messages[index + 1].SenderID === props.myuserdatas.id) {
-    //                 return (
-    //                   <MessageByMe
-    //                     key={`MESSAGE_BY_ME_${index}`}
-    //                     text={m.Text}
-    //                     date={m.Date}
-    //                     last={false}
-    //                   />
-    //                 );
-    //               }
-    //             }
-    //             return (
-    //               <MessageByMe
-    //                 key={`MESSAGE_BY_ME_${index}`}
-    //                 text={m.Text}
-    //                 date={m.Date}
-    //                 last={true}
-    //               />
-    //             );
-    //           } else {
-    //             if (messages[index + 1]) {
-    //               if (messages[index + 1].SenderID === m.SenderID) {
-    //                 return (
-    //                   <MessageByOther
-    //                     key={`MESSAGE_BY_OTHER_${index}`}
-    //                     text={m.Text}
-    //                     date={m.Date}
-    //                     avatar={m.AvatarURL}
-    //                     last={false}
-    //                   />
-    //                 );
-    //               }
-    //             }
-    //             return (
-    //               <MessageByOther
-    //                 key={`MESSAGE_BY_OTHER_${index}`}
-    //                 text={m.Text}
-    //                 date={m.Date}
-    //                 avatar={m.AvatarURL}
-    //                 last={true}
-    //               />
-    //             );
-    //           }
-    //         })}
-    //         <div ref={bottomScroll} />
-    //       </div>
-    //     </div>
-
-    //     <div className="main-container-messages-bottom">
-    //       <div
-    //         style={{
-    //           padding: "20px",
-    //           display: "flex",
-    //           justifyContent: "space-between",
-    //           width: "100%",
-    //         }}
-    //       >
-    //         <div className="main-container-messages-bottom-main">
-    //           <div className="main-container-messages-bottom-container">
-    //             <div className="main-container-messages-bottom-container-left">
-    //               <img
-    //                 src={attachment}
-    //                 style={{ width: "42px", height: "42px", cursor: "pointer" }}
-    //               />
-    //               <input
-    //                 className="main-bottom-input"
-    //                 type="text"
-    //                 placeholder="Type your message here..."
-    //                 style={{ border: "none", outline: "none" }}
-    //                 ref={currentMessage}
-    //               />
-    //             </div>
-    //             <img
-    //               src={smile}
-    //               style={{ width: "42px", height: "42px", cursor: "pointer" }}
-    //             />
-    //           </div>
-    //         </div>
-    //         <div
-    //           className="main-bottom-send-button"
-    //           onClick={() => sendMessage()}
-    //         >
-    //           <img src={send} />
-    //         </div>
-    //       </div>
-    //     </div>
-    //   </div>
-    // </div>
   );
 }
 
