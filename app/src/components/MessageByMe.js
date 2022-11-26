@@ -2,7 +2,9 @@ import React, { useState } from "react";
 import { apiurl } from "../config/globalVariables";
 
 function MessageByMe({ text, date, last, imageurls, callback }) {
-  // callback();
+  function padTo2Digits(num) {
+    return num.toString().padStart(2, "0");
+  }
   return (
     <div className="main-container-message-by-me-container">
       {text && (
@@ -43,7 +45,10 @@ function MessageByMe({ text, date, last, imageurls, callback }) {
       )}
       {last && (
         <div className="main-container-message-by-me-date">
-          {new Date(date).getHours() + ":" + new Date(date).getMinutes()}
+          {/* {formatDate(new Date(date))} */}
+          {padTo2Digits(new Date(date).getHours()) +
+            ":" +
+            padTo2Digits(new Date(date).getMinutes())}
         </div>
       )}
     </div>
