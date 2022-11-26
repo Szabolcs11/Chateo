@@ -24,6 +24,8 @@ function TurnOffTwoFa({ userid }) {
         if (res.data.succes) {
           handleStartDisableTwoFa(false);
           changecheckedstate(false);
+        } else {
+          toast.error(res.data.message);
         }
       });
   };

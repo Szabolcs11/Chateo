@@ -159,6 +159,14 @@ io.on("connection", (socket) => {
     console.log(`connect_error due to ${err.message}`);
   });
 
+  socket.on("istartedtyping", (room, id) => {
+    socket.to(room).emit("userchangedtyping", true, room, id);
+  });
+
+  socket.on("istoppedtyping", (room, id) => {
+    socket.to(room).emit("userchangedtyping", false, room, id);
+  });
+
   socket.on("disconnect", (a) => {
     // console.log("dc");
     // console.log(getFullDate(), "dc");
@@ -991,6 +999,11 @@ app.post("/turnofftwofa", (req, res) => {
         }
       }
     });
+  } else {
+    return res.status(200).json({
+      succes: false,
+      message: "Fill out the data!",
+    });
   }
 });
 
@@ -1050,6 +1063,11 @@ app.post("/verifytwofa", (req, res) => {
           message: "UrlToken not found!",
         });
       }
+    });
+  } else {
+    return res.status(200).json({
+      succes: false,
+      message: "Fill the datas!",
     });
   }
 });

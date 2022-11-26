@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, {
+  Fragment,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import io from "socket.io-client";
 import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
@@ -162,6 +168,9 @@ function ChatComponent(props) {
 
   // Testing 10-03 \\
 
+  // Typing test \\
+  const [isTyping, setIsTyping] = useState();
+
   const initBeforeUnLoad = (showExitPrompt) => {
     window.onbeforeunload = (event) => {
       // Show prompt based on state
@@ -305,11 +314,17 @@ function ChatComponent(props) {
       joinroom(chatdatas.RoomKey);
     });
     setPartnerDatas(chatdatas);
+    console.log(chatdatas);
   };
 
   useEffect(() => {
-    bottomScroll.current?.scrollIntoView();
+    // bottomScroll.current?.scrollIntoView();
+    scrolltobottom();
   }, [messages]);
+
+  const scrolltobottom = () => {
+    bottomScroll.current?.scrollIntoView();
+  };
 
   const [currentRoomKey, setCurrentRoomKey] = useState();
 
@@ -547,6 +562,41 @@ function ChatComponent(props) {
     }
   };
 
+  const TypingRef = useRef();
+  useEffect(() => {
+    props.socket.on("userchangedtyping", async (status, room, userid) => {
+      let currentRKey = localStorage.getItem("RoomKey") || "";
+      if (props.myuserdatas.id != userid && currentRKey == room) {
+        setIsTyping(status);
+      }
+    });
+  }, [props.socket]);
+
+  useEffect(() => {
+    scrolltobottom();
+  }, [isTyping]);
+
+  const handleStartTyping = () => {
+    if (partnerdatas.Status) {
+      const timer = setTimeout(() => {
+        props.socket.emit(
+          "istartedtyping",
+          partnerdatas.RoomKey,
+          props.myuserdatas.id,
+          () => {}
+        );
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  };
+  const handleStopTyping = () => {
+    props.socket.emit(
+      "istoppedtyping",
+      partnerdatas.RoomKey,
+      props.myuserdatas.id
+    );
+  };
+
   if (createGroup) {
     return (
       <div
@@ -691,7 +741,6 @@ function ChatComponent(props) {
           </div>
           <div
             style={{
-              // backgroundColor: "red",
               width: "100%",
               height: "100%",
             }}
@@ -725,7 +774,6 @@ function ChatComponent(props) {
                     }}
                     src={groupAvatarURL}
                   />
-                  {/* <div style={{widows: }}> */}
                   <label htmlFor="file-input">
                     <img
                       style={{
@@ -745,11 +793,8 @@ function ChatComponent(props) {
                     type="file"
                     accept=".png, .jpg, .jpeg"
                     onChange={handleChange}
-                    // setGroupAvatar
                     multiple
                   />
-
-                  {/* </div> */}
                 </div>
               </div>
               <div style={{ paddingTop: 50, fontSize: 26 }}>
@@ -813,7 +858,6 @@ function ChatComponent(props) {
       </div>
     );
   }
-
   if (!partnerdatas) {
     return (
       <div className="chatcomponent-nofiriendselected">
@@ -826,7 +870,6 @@ function ChatComponent(props) {
       </div>
     );
   }
-
   return (
     <div
       style={{
@@ -896,7 +939,7 @@ function ChatComponent(props) {
                         last={false}
                         imageurls={m.ImageIDs ? m.ImageIDs.split(",") : ""}
                         callback={(url) => {
-                          console.log(url);
+                          setImagePreview(url);
                         }}
                       />
                     );
@@ -947,6 +990,68 @@ function ChatComponent(props) {
                 );
               }
             })}
+            <div ref={TypingRef}>
+              {isTyping ? (
+                <div
+                  style={{
+                    width: "200px",
+                    height: "75px",
+                    bottom: 150,
+                  }}
+                >
+                  <div
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        marginRight: 20,
+                      }}
+                    >
+                      <img
+                        style={{
+                          width: "70px",
+                          height: "70px",
+                          borderRadius: "50%",
+                        }}
+                        src={
+                          apiurl + "UsersProfileImg/" + partnerdatas.AvatarURL
+                        }
+                      />
+                    </div>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-around",
+                        paddingTop: "10px",
+                        paddingLeft: "20px",
+                        paddingRight: "20px",
+                        backgroundColor: "#7c7c7c",
+                        borderRadius: "30px",
+                        height: "50px",
+                      }}
+                    >
+                      <div className="point-container">
+                        <div className="point first"></div>
+                      </div>
+                      <div className="point-container">
+                        <div className="point secound"></div>
+                      </div>
+                      <div className="point-container">
+                        <div className="point third"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : null}
+            </div>
             <div ref={bottomScroll} />
           </div>
         </div>
@@ -1065,6 +1170,8 @@ function ChatComponent(props) {
                   placeholder="Type your message here..."
                   style={{ border: "none", outline: "none" }}
                   ref={currentMessage}
+                  onFocus={() => handleStartTyping()}
+                  onBlur={() => handleStopTyping()}
                   onChange={(e) => inputtextchange(e)}
                 />
               </div>
@@ -1089,7 +1196,6 @@ function ChatComponent(props) {
                       width: 230,
                       height: 250,
                       backgroundColor: "#EFF6FC",
-                      // backgroundColor: "red",
                       position: "absolute",
                       top: -260,
                       right: 50,
@@ -1110,11 +1216,6 @@ function ChatComponent(props) {
                         className="emoji-panel-container"
                         style={{
                           width: "100%",
-                          // height: "100%",
-                          // backgroundColor: "gray",
-                          // display: "flex",
-                          // flexDirection: "row",
-                          // flexWrap: "wrap",
                         }}
                       >
                         {emojis.map((e) => {

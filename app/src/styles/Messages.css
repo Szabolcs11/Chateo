@@ -473,6 +473,7 @@
   width: 100%;
   height: 100%;
   box-sizing: border-box;
+  position: relative;
   /* background-color: #F24E1E; */
 }
 
@@ -483,6 +484,7 @@
   height: 100%;
 
   overflow: scroll;
+  /* position: relative; */
 }
 
 .main-container-messages-content::-webkit-scrollbar {

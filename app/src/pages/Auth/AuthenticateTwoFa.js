@@ -6,6 +6,7 @@ import axios from "axios";
 import { apiurl } from "../../config/globalVariables";
 import { useNavigate } from "react-router-dom";
 import { handleTwoFaLogin } from "../../App";
+import { toast } from "react-toastify";
 
 function AuthenticateTwoFa() {
   let { key } = useParams();
@@ -13,7 +14,9 @@ function AuthenticateTwoFa() {
   const navigate = useNavigate();
   useEffect(() => {
     if (code == undefined || code == "" || code == " ") return;
-    handleVerifyCode();
+    if (code.length == 6) {
+      handleVerifyCode();
+    }
   }, [code]);
 
   const handleVerifyCode = () => {
@@ -29,6 +32,8 @@ function AuthenticateTwoFa() {
         }
         if (res.data.succes) {
           handleTwoFaLogin(res.data.user, res.data.token);
+        } else {
+          toast.error(res.data.message);
         }
       });
   };
