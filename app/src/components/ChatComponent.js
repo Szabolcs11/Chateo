@@ -45,6 +45,7 @@ import blackx from "../assets/svgs/blackx.svg";
 import style from "../styles/ChatComponent.css";
 
 import useWindowFocus from "use-window-focus";
+import MessageDevider from "./MessageDevider";
 
 export let handleDeleteChat;
 
@@ -297,8 +298,24 @@ function ChatComponent(props) {
           );
         }
       }
-      setMessages(messagedatas);
+      setMessages(formatMessages(messagedatas));
     }
+  };
+
+  const formatMessages = (mess) => {
+    mess.map((m, index) => {
+      if (mess[index - 1]) {
+        if (
+          new Date(mess[index - 1].Date).getDate() != new Date(m.Date).getDate()
+        ) {
+          let temp = m;
+          temp.Divider = true;
+          return temp;
+        }
+      }
+      return m;
+    });
+    return mess;
   };
 
   selectPerson = (chatdatas) => {
@@ -314,7 +331,7 @@ function ChatComponent(props) {
       joinroom(chatdatas.RoomKey);
     });
     setPartnerDatas(chatdatas);
-    console.log(chatdatas);
+    // console.log(chatdatas);
   };
 
   useEffect(() => {
@@ -348,11 +365,10 @@ function ChatComponent(props) {
     props.socket.on("recivemessage", (data) => {
       let currentRKey = localStorage.getItem("RoomKey") || "";
       if (data.RoomKey == currentRKey) {
-        console.log(data.length);
         for (let j = 0; j < emojis.length; j++) {
           data.Text = data.Text.replaceAll(emojis[j][1], emojis[j][0]);
         }
-        setMessages((prevMessage) => [...prevMessage, data]);
+        setMessages((prevMessage) => formatMessages([...prevMessage, data]));
       } else {
         changeusernotificationstatus(data.RoomKey);
       }
@@ -410,26 +426,28 @@ function ChatComponent(props) {
               Username,
               ImageIDs,
             } = cb.messagedatas;
-            setMessages([
-              ...messages,
-              {
-                SenderID: SenderID,
-                AvatarURL: AvatarURL,
-                Date: Date,
-                RoomID: RoomID,
-                RoomKey: RoomKey,
-                Text: messagetext,
-                Username: Username,
-                ImageIDs: ImageIDs ? ImageIDs.toString() : "",
-              },
-            ]);
+            setMessages(
+              formatMessages([
+                ...messages,
+                {
+                  SenderID: SenderID,
+                  AvatarURL: AvatarURL,
+                  Date: Date,
+                  RoomID: RoomID,
+                  RoomKey: RoomKey,
+                  Text: messagetext,
+                  Username: Username,
+                  ImageIDs: ImageIDs ? ImageIDs.toString() : "",
+                },
+              ])
+            );
             currentMessage.current.value = "";
           }
         }
       );
       setImageURL([]);
     } else if (ImageURL && ImageURL.length > 0) {
-      console.log("Most csak kepek");
+      // console.log("Most csak kepek");
       var imagesurls = [];
       if (ImageURL.length > 0) {
         for (let i = 0; i < ImageURL.length; i++) {
@@ -441,7 +459,7 @@ function ChatComponent(props) {
             data,
           });
           imagesurls.push(cc_res.data.file);
-          console.log(cc_res.data);
+          // console.log(cc_res.data);
         }
       }
 
@@ -463,7 +481,7 @@ function ChatComponent(props) {
               Username,
               ImageIDs,
             } = cb.messagedatas;
-            console.log("ImgUrls2", ImageIDs);
+            // console.log("ImgUrls2", ImageIDs);
             setMessages([
               ...messages,
               {
@@ -514,15 +532,15 @@ function ChatComponent(props) {
   };
 
   const handleChange = async (e) => {
-    console.log("file", e);
+    // console.log("file", e);
     const src = URL.createObjectURL(e.target.files[0]);
     if (e.target.files.length > 0) {
       let srcs = [];
       for (let i = 0; i < e.target.files.length; i++) {
         srcs.push(e.target.files[i]);
       }
-      console.log(srcs);
-      console.log(srcs[0]);
+      // console.log(srcs);
+      // console.log(srcs[0]);
       setGroupAvatar(srcs[0]);
       setGroupAvatarURL(src);
     }
@@ -551,7 +569,7 @@ function ChatComponent(props) {
           Persons: friends,
         })
         .then((res) => {
-          console.log(res.data);
+          // console.log(res.data);
           if (res.data.succes) {
             toast.success(res.data.message);
             personsforceupdate();
@@ -562,7 +580,6 @@ function ChatComponent(props) {
     }
   };
 
-  const TypingRef = useRef();
   useEffect(() => {
     props.socket.on("userchangedtyping", async (status, room, userid) => {
       let currentRKey = localStorage.getItem("RoomKey") || "";
@@ -932,126 +949,130 @@ function ChatComponent(props) {
                 if (messages[index + 1]) {
                   if (messages[index + 1].SenderID === props.myuserdatas.id) {
                     return (
-                      <MessageByMe
-                        key={`MESSAGE_BY_ME_${index}`}
-                        text={m.Text}
-                        date={m.Date}
-                        last={false}
-                        imageurls={m.ImageIDs ? m.ImageIDs.split(",") : ""}
-                        callback={(url) => {
-                          setImagePreview(url);
-                        }}
-                      />
+                      <Fragment key={`MESSAGE_BY_ME_${index}`}>
+                        {m.Divider ? <MessageDevider date={m.Date} /> : null}
+                        <MessageByMe
+                          text={m.Text}
+                          date={m.Date}
+                          last={false}
+                          imageurls={m.ImageIDs ? m.ImageIDs.split(",") : ""}
+                          callback={(url) => {
+                            setImagePreview(url);
+                          }}
+                        />
+                      </Fragment>
                     );
                   }
                 }
                 return (
-                  <MessageByMe
-                    key={`MESSAGE_BY_ME_${index}`}
-                    text={m.Text}
-                    date={m.Date}
-                    last={true}
-                    imageurls={m.ImageIDs ? m.ImageIDs.split(",") : ""}
-                    callback={(url) => {
-                      setImagePreview(url);
-                    }}
-                  />
+                  <Fragment key={`MESSAGE_BY_ME_${index}`}>
+                    {m.Divider ? <MessageDevider date={m.Date} /> : null}
+                    <MessageByMe
+                      text={m.Text}
+                      date={m.Date}
+                      last={true}
+                      imageurls={m.ImageIDs ? m.ImageIDs.split(",") : ""}
+                      callback={(url) => {
+                        setImagePreview(url);
+                      }}
+                    />
+                  </Fragment>
                 );
               } else {
                 if (messages[index + 1]) {
                   if (messages[index + 1].SenderID === m.SenderID) {
                     return (
-                      <MessageByOther
-                        key={`MESSAGE_BY_OTHER_${index}`}
-                        text={m.Text}
-                        date={m.Date}
-                        avatar={m.AvatarURL}
-                        last={false}
-                        imageurls={m.ImageIDs ? m.ImageIDs.split(",") : ""}
-                        callback={(url) => {
-                          setImagePreview(url);
-                        }}
-                      />
+                      <Fragment key={`MESSAGE_BY_OTHER_${index}`}>
+                        {m.Divider ? <MessageDevider date={m.Date} /> : null}
+                        <MessageByOther
+                          text={m.Text}
+                          date={m.Date}
+                          avatar={m.AvatarURL}
+                          last={false}
+                          imageurls={m.ImageIDs ? m.ImageIDs.split(",") : ""}
+                          callback={(url) => {
+                            setImagePreview(url);
+                          }}
+                        />
+                      </Fragment>
                     );
                   }
                 }
                 return (
-                  <MessageByOther
-                    key={`MESSAGE_BY_OTHER_${index}`}
-                    text={m.Text}
-                    date={m.Date}
-                    avatar={m.AvatarURL}
-                    last={true}
-                    imageurls={m.ImageIDs ? m.ImageIDs.split(",") : ""}
-                    callback={(url) => {
-                      setImagePreview(url);
-                    }}
-                  />
+                  <Fragment key={`MESSAGE_BY_OTHER_${index}`}>
+                    {m.Divider ? <MessageDevider date={m.Date} /> : null}
+                    <MessageByOther
+                      text={m.Text}
+                      date={m.Date}
+                      avatar={m.AvatarURL}
+                      last={true}
+                      imageurls={m.ImageIDs ? m.ImageIDs.split(",") : ""}
+                      callback={(url) => {
+                        setImagePreview(url);
+                      }}
+                    />
+                  </Fragment>
                 );
               }
             })}
-            <div ref={TypingRef}>
-              {isTyping ? (
+            {isTyping ? (
+              <div
+                style={{
+                  width: "200px",
+                  height: "75px",
+                  bottom: 150,
+                }}
+              >
                 <div
                   style={{
-                    width: "200px",
-                    height: "75px",
-                    bottom: 150,
+                    width: "100%",
+                    height: "100%",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
                   }}
                 >
                   <div
                     style={{
-                      width: "100%",
-                      height: "100%",
                       display: "flex",
-                      justifyContent: "space-between",
                       alignItems: "center",
+                      marginRight: 20,
                     }}
                   >
-                    <div
+                    <img
                       style={{
-                        display: "flex",
-                        alignItems: "center",
-                        marginRight: 20,
+                        width: "70px",
+                        height: "70px",
+                        borderRadius: "50%",
                       }}
-                    >
-                      <img
-                        style={{
-                          width: "70px",
-                          height: "70px",
-                          borderRadius: "50%",
-                        }}
-                        src={
-                          apiurl + "UsersProfileImg/" + partnerdatas.AvatarURL
-                        }
-                      />
+                      src={apiurl + "UsersProfileImg/" + partnerdatas.AvatarURL}
+                    />
+                  </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-around",
+                      paddingTop: "10px",
+                      paddingLeft: "20px",
+                      paddingRight: "20px",
+                      backgroundColor: "#7c7c7c",
+                      borderRadius: "30px",
+                      height: "50px",
+                    }}
+                  >
+                    <div className="point-container">
+                      <div className="point first"></div>
                     </div>
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-around",
-                        paddingTop: "10px",
-                        paddingLeft: "20px",
-                        paddingRight: "20px",
-                        backgroundColor: "#7c7c7c",
-                        borderRadius: "30px",
-                        height: "50px",
-                      }}
-                    >
-                      <div className="point-container">
-                        <div className="point first"></div>
-                      </div>
-                      <div className="point-container">
-                        <div className="point secound"></div>
-                      </div>
-                      <div className="point-container">
-                        <div className="point third"></div>
-                      </div>
+                    <div className="point-container">
+                      <div className="point secound"></div>
+                    </div>
+                    <div className="point-container">
+                      <div className="point third"></div>
                     </div>
                   </div>
                 </div>
-              ) : null}
-            </div>
+              </div>
+            ) : null}
             <div ref={bottomScroll} />
           </div>
         </div>
@@ -1106,7 +1127,6 @@ function ChatComponent(props) {
                   >
                     {ImageURL.map((m) => {
                       const url = URL.createObjectURL(m);
-                      console.log(url);
                       return (
                         <div key={m.name} style={{ position: "relative" }}>
                           <img

@@ -3,3 +3,4 @@ app/node_modules
 app/build
 api/public/UsersProfileImg
 api/public/UsersProfileImgX
+Protected/*

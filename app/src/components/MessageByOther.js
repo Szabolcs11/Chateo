@@ -1,10 +1,8 @@
 import React from "react";
+import { formatDate } from "../config/globalFunctions";
 import { apiurl } from "../config/globalVariables";
 
 function MessageByOther({ avatar, text, date, last, imageurls, callback }) {
-  function padTo2Digits(num) {
-    return num.toString().padStart(2, "0");
-  }
   return (
     <div className="main-container-message-by-other-container">
       <div className="main-container-message-by-other">
@@ -38,9 +36,9 @@ function MessageByOther({ avatar, text, date, last, imageurls, callback }) {
       )}
       {last && (
         <div className="main-container-message-by-other-date">
-          {padTo2Digits(new Date(date).getHours()) +
+          {formatDate(new Date(date).getHours()) +
             ":" +
-            padTo2Digits(new Date(date).getMinutes())}
+            formatDate(new Date(date).getMinutes())}
         </div>
       )}
     </div>
