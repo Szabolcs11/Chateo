@@ -26,7 +26,7 @@ export let handleLogout;
 
 function App() {
   const socket = io.connect(apiurl);
-  console.log("app render");
+  // console.log("app render");
   const [user, setUser] = useState();
   const navigate = useNavigate();
   const [cookies, setCookie, removeCookie] = useCookies(["sessiontoken"]);
