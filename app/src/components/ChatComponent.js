@@ -46,6 +46,7 @@ import style from "../styles/ChatComponent.css";
 
 import useWindowFocus from "use-window-focus";
 import MessageDevider from "./MessageDevider";
+import { DecodeMessage, EncryptMessage } from "../config/messageProtection";
 
 export let handleDeleteChat;
 
@@ -122,7 +123,7 @@ export let joinAllPrivateConversation;
 export let createNewGroup;
 
 function ChatComponent(props) {
-  console.log(props);
+  // console.log(props);
   const [, updateState] = React.useState();
   const forceUpdate = React.useCallback(() => updateState({}), []);
   // const socket = io("http://localhost:2004/");
@@ -288,14 +289,11 @@ function ChatComponent(props) {
     setChatKeys(keys);
   };
 
-  const loadMessages = (messagedatas) => {
+  const loadMessages = (messagedatas, roomkey) => {
     if (messagedatas) {
       for (let i = 0; i < messagedatas.length; i++) {
-        for (let j = 0; j < emojis.length; j++) {
-          messagedatas[i].Text = messagedatas[i].Text.replaceAll(
-            emojis[j][1],
-            emojis[j][0]
-          );
+        if (messagedatas[i].Text.length) {
+          messagedatas[i].Text = DecodeMessage(messagedatas[i].Text, roomkey);
         }
       }
       setMessages(formatMessages(messagedatas));
@@ -325,13 +323,12 @@ function ChatComponent(props) {
         let st = JSON.parse(chatdatas.Status);
         updateheaderstatus(st.Status);
       }
-      if (cb.succes) {
-        loadMessages(cb.messagedatas);
-      }
       joinroom(chatdatas.RoomKey);
+      if (cb.succes) {
+        loadMessages(cb.messagedatas, chatdatas.RoomKey);
+      }
     });
     setPartnerDatas(chatdatas);
-    // console.log(chatdatas);
   };
 
   useEffect(() => {
@@ -365,9 +362,7 @@ function ChatComponent(props) {
     props.socket.on("recivemessage", (data) => {
       let currentRKey = localStorage.getItem("RoomKey") || "";
       if (data.RoomKey == currentRKey) {
-        for (let j = 0; j < emojis.length; j++) {
-          data.Text = data.Text.replaceAll(emojis[j][1], emojis[j][0]);
-        }
+        data.Text = DecodeMessage(data.Text, currentRKey);
         setMessages((prevMessage) => formatMessages([...prevMessage, data]));
       } else {
         changeusernotificationstatus(data.RoomKey);
@@ -387,9 +382,7 @@ function ChatComponent(props) {
   const sendMessage = async () => {
     if (currentMessage.current.value) {
       let cbmessage = currentMessage.current.value;
-      for (let i = 0; i < emojis.length; i++) {
-        cbmessage = cbmessage.replaceAll(emojis[i][0], emojis[i][1]);
-      }
+      let encryptedmessage = EncryptMessage(cbmessage, partnerdatas.RoomKey);
       var imagesurls = [];
       if (ImageURL && ImageURL.length > 0) {
         for (let i = 0; i < ImageURL.length; i++) {
@@ -407,7 +400,7 @@ function ChatComponent(props) {
       props.socket.emit(
         "sendmessage",
         partnerdatas.RoomKey,
-        cbmessage,
+        encryptedmessage,
         props.myuserdatas,
         imagesurls,
         (cb) => {
@@ -435,7 +428,7 @@ function ChatComponent(props) {
                   Date: Date,
                   RoomID: RoomID,
                   RoomKey: RoomKey,
-                  Text: messagetext,
+                  Text: DecodeMessage(messagetext, partnerdatas.RoomKey),
                   Username: Username,
                   ImageIDs: ImageIDs ? ImageIDs.toString() : "",
                 },

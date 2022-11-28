@@ -480,7 +480,7 @@ app.post("/handlefriendrequest", (req, res) => {
               connection.query("INSERT INTO friends SET ?", revinfo, function (ifferr, iffres) {
                 if (ifferr) throw ifferr;
                 let rminfo = {
-                  RoomKey: GenerateToken(8),
+                  RoomKey: GenerateToken(6),
                   Date: getFullDate(),
                 };
                 connection.query("INSERT INTO rooms SET ?", rminfo, function (irerr, irres) {
