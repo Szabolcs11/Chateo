@@ -125,7 +125,6 @@ function App() {
         />
         <Routes>
           <Route element={<MainLayout userdatas={user} />}>
-            {/* <Route path="/" element={(window.location.href = "/home")} /> */}
             <Route path="/" element={<Home />} />
             <Route
               path="/message"

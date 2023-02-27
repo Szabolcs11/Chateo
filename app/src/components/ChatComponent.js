@@ -360,6 +360,7 @@ function ChatComponent(props) {
   useEffect(() => {
     if (props.socket == null) return;
     props.socket.on("recivemessage", (data) => {
+      console.log("recivedmessae", data);
       let currentRKey = localStorage.getItem("RoomKey") || "";
       if (data.RoomKey == currentRKey) {
         data.Text = DecodeMessage(data.Text, currentRKey);

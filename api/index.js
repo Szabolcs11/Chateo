@@ -25,12 +25,14 @@ const connection = mysql.createPool({
   user: "root",
   password: "",
   database: "messengerinreact",
+  connectionLimit: 10,
 });
 connection.getConnection(function (err, connection) {
   if (err) {
     return console.error("error: " + err.message);
   }
   console.log("Connected to the MySQL server.");
+  connection.release();
 });
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -84,6 +86,11 @@ io.on("connection", (socket) => {
       // socket
       //   .to(socket.AllRoom[i].RoomKey)
       //   .emit("userdisconencted", "Offline", "Nev", socket.AllRoom[i].RoomKey);
+      // if (socket.rooms.has(roomKey)) {
+      //   console.log("Már benen vagyok a szobába");
+      // } else {
+      //   console.log("Nem vagyban benne a szobában");
+      // }
       socket.MyUserID = myid;
       // to all clients in room1 except the sender
       if (runsocket) {
@@ -97,8 +104,15 @@ io.on("connection", (socket) => {
         if (srres.length) {
           if (socketjoin) {
             socket.join(roomKey);
+            // if (!socket.rooms.has(roomKey)) {
+            //   // console.log("Joinol");
+            //   socket.leave(roomKey);
+            //   socket.join(roomKey);
+            // } else {
+            //   // console.log("Nem joinol");
+            // }
           }
-          cb({ succes: true });
+          cb({ succes: true, message: "Succesfully joined the room" });
         }
       });
     } else {
@@ -136,7 +150,7 @@ io.on("connection", (socket) => {
           connection.query("INSERT INTO messages SET ?", insertarr, function (imerr, imres) {
             if (imerr) throw imerr;
             socket.to(roomKey).emit("recivemessage", messageinfo);
-            // console.log(messageinfo);
+            console.log(messageinfo);
             cb({ succes: true, messagedatas: messageinfo });
           });
         } else {
@@ -346,6 +360,23 @@ app.post("/getfriends", async (req, res) => {
     res.status(200).json({
       succes: true,
       chats: result,
+    });
+  }
+});
+
+app.post("/getonlinefriends", async (req, res) => {
+  if (req.body.myid) {
+    const result = await getchats(req.body.myid);
+    let onlinefriends = [];
+    for (let i = 0; i < result.length; i++) {
+      let UserStatus = JSON.parse(result[i]?.Status || null);
+      if (UserStatus?.Status == "Online") {
+        onlinefriends.push(result[i]);
+      }
+    }
+    res.status(200).json({
+      succes: true,
+      chats: onlinefriends,
     });
   }
 });

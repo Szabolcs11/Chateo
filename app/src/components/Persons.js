@@ -42,6 +42,7 @@ function Persons(props) {
       })
       .then((res) => {
         if (res.data.succes) {
+          console.log("Joinol az osszesbe");
           joinAllPrivateConversation(res.data.chats);
           setChats(res.data.chats);
           setSearchChats(res.data.chats);
