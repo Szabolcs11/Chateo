@@ -371,15 +371,6 @@ function ChatComponent(props) {
     });
   }, [props.socket]);
 
-  const inputtextchange = (e) => {
-    for (let i = 0; i < emojis.length; i++) {
-      currentMessage.current.value = currentMessage.current.value.replaceAll(
-        emojis[i][1],
-        emojis[i][0]
-      );
-    }
-  };
-
   const sendMessage = async () => {
     if (currentMessage.current.value) {
       let cbmessage = currentMessage.current.value;
@@ -407,9 +398,6 @@ function ChatComponent(props) {
         (cb) => {
           if (cb.succes) {
             let messagetext = cb.messagedatas.Text;
-            for (let i = 0; i < emojis.length; i++) {
-              messagetext = messagetext.replaceAll(emojis[i][1], emojis[i][0]);
-            }
             const {
               SenderID,
               AvatarURL,
@@ -1186,7 +1174,6 @@ function ChatComponent(props) {
                   ref={currentMessage}
                   onFocus={() => handleStartTyping()}
                   onBlur={() => handleStopTyping()}
-                  onChange={(e) => inputtextchange(e)}
                 />
               </div>
               <div
@@ -1239,8 +1226,7 @@ function ChatComponent(props) {
                               className="emojiselector-item"
                               onClick={() => {
                                 currentMessage.current.value =
-                                  currentMessage.current.value + e[1] + " ";
-                                inputtextchange("a");
+                                  currentMessage.current.value + e[0] + " ";
                               }}
                             >
                               {e[0]}
