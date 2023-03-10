@@ -6,3 +6,7 @@
       useAngle
     >
     import LinearGradient from "react-native-linear-gradient";
+    
+    
+    "react-native-vision-camera": "^2.15.4",
+        "react-native": "0.71.3",
