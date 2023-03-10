@@ -2,7 +2,7 @@ import React from "react";
 import plus from "../assets/svgs/plus.svg";
 import { apiurl } from "../config/globalVariables";
 
-function SearchedUserComponent({ id, avatar, name, callback }) {
+function SearchedUserComponent({ id, avatar, FullName, callback }) {
   return (
     <div className="tab" style={{ cursor: "default" }}>
       <div className="tab-left">
@@ -13,7 +13,7 @@ function SearchedUserComponent({ id, avatar, name, callback }) {
           style={{ width: "50px", height: "50px", borderRadius: "50%" }}
         />
         <div className="tab-datas">
-          <div className="tab-datas-name">{name}</div>
+          <div className="tab-datas-name">{FullName}</div>
         </div>
       </div>
       <div

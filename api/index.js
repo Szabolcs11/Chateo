@@ -54,7 +54,7 @@ const storage = multer.diskStorage({
   },
 });
 
-const upload = multer({ storage });
+const upload = multer({ storage, limits: { fieldSize: 25 * 1024 * 1024 } });
 
 io.on("connection", (socket) => {
   //   console.log(socket.id);
@@ -62,7 +62,7 @@ io.on("connection", (socket) => {
   socket.on("getroommessages", (RoomID, cb) => {
     // console.log("kapom");
     connection.query(
-      "SELECT users.id AS 'UserID', users.Username, users.AvatarURL, messages.id AS 'MessageID', messages.SenderID, messages.Text, messages.RoomID, messages.Date, messages.ImageIDs FROM `messages` INNER JOIN users ON SenderID=users.id WHERE RoomID=? ORDER BY Date ASC",
+      "SELECT users.id AS 'UserID', users.FullName, users.AvatarURL, messages.id AS 'MessageID', messages.SenderID, messages.Text, messages.RoomID, messages.Date, messages.ImageIDs FROM `messages` INNER JOIN users ON SenderID=users.id WHERE RoomID=? ORDER BY Date ASC",
       RoomID,
       function (smerr, smres) {
         if (smerr) throw smerr;
@@ -130,7 +130,7 @@ io.on("connection", (socket) => {
           // Üzenet adatai
 
           let messageinfo = {
-            Username: senderdatas.Username,
+            FullName: senderdatas.FullName,
             AvatarURL: senderdatas.AvatarURL,
             Text: message,
             RoomKey: roomKey,
@@ -150,7 +150,7 @@ io.on("connection", (socket) => {
           connection.query("INSERT INTO messages SET ?", insertarr, function (imerr, imres) {
             if (imerr) throw imerr;
             socket.to(roomKey).emit("recivemessage", messageinfo);
-            console.log(messageinfo);
+            // console.log(messageinfo);
             cb({ succes: true, messagedatas: messageinfo });
           });
         } else {
@@ -164,7 +164,7 @@ io.on("connection", (socket) => {
 
   // Handle Status \\
 
-  socket.on("updatestate", (status, username, cb) => {
+  socket.on("updatestate", (status, FullName, cb) => {
     // console.log("Leave");
     // cb("asd");
   });
@@ -222,11 +222,11 @@ app.get("/", (req, res) => {
 // SELECT rooms.id AS 'RoomID', rooms.RoomKey, messages.id, messages.SenderID, messages.Text, messages.RoomID, messages.Date FROM messages INNER JOIN rooms ON rooms.RoomKey =  WHERE rooms.RoomKey='123456';
 
 app.post("/Register", async (req, res) => {
-  if (req.body.Username && req.body.Password && req.body.Email) {
+  if (req.body.FullName && req.body.Password && req.body.Email) {
     const hasdhedPassword = await bcrypt.hash(req.body.Password, 10);
 
     let info = {
-      Username: req.body.Username,
+      FullName: req.body.FullName,
       Password: hasdhedPassword,
       Email: req.body.Email,
       RegDate: getFullDate(),
@@ -249,8 +249,8 @@ app.post("/Register", async (req, res) => {
 });
 
 app.post("/login", (req, res) => {
-  if (req.body.Username && req.body.Password) {
-    connection.query("SELECT * FROM users WHERE Username=?", req.body.Username, function (suerr, sures) {
+  if (req.body.Email && req.body.Password) {
+    connection.query("SELECT * FROM users WHERE Email=?", req.body.Email, function (suerr, sures) {
       if (suerr) throw suerr;
       if (sures.length) {
         bcrypt.compare(req.body.Password, sures[0].Password, function (err, isMath) {
@@ -320,7 +320,7 @@ app.post("/login", (req, res) => {
 app.post("/authenticate", (req, res) => {
   if (req.body.Token) {
     connection.query(
-      "SELECT users.id, users.Username, users.Email, users.RegDate, users.AvatarURL FROM sessions INNER JOIN users ON sessions.UserID = users.id WHERE sessions.Token=?",
+      "SELECT users.id, users.FullName, users.Email, users.RegDate, users.AvatarURL FROM sessions INNER JOIN users ON sessions.UserID = users.id WHERE sessions.Token=?",
       req.body.Token,
       function (sserr, ssres) {
         if (sserr) throw sserr;
@@ -364,6 +364,83 @@ app.post("/getfriends", async (req, res) => {
   }
 });
 
+app.post("/getallfriends", (req, res) => {
+  if (req.body.myid) {
+    connection.query("SELECT friends.FriendID as id, users.FullName, users.AvatarURL FROM friends, users WHERE UserID=? AND users.id = friends.FriendID;", req.body.myid, function (suerr, sures) {
+      if (suerr) throw suerr;
+      if (sures.length) {
+        return res.status(200).json({
+          succes: true,
+          friends: sures,
+        });
+      } else {
+        return res.status(200).json({
+          success: false,
+          friends: [],
+        });
+      }
+    });
+  } else {
+    return res.status(200).json({
+      success: false,
+      message: "Unknown error",
+    });
+  }
+});
+
+app.post("/getalluser", (req, res) => {
+  if (req.body.myid) {
+    connection.query("SELECT users.id, users.FullName, users.AvatarURL FROM users WHERE users.id!=?", req.body.myid, function (suerr, sures) {
+      if (suerr) throw suerr;
+      if (sures.length) {
+        return res.status(200).json({
+          succes: true,
+          users: sures,
+        });
+      } else {
+        return res.status(200).json({
+          success: true,
+          users: [],
+        });
+      }
+    });
+  } else {
+    return res.status(200).json({
+      success: false,
+      message: "Unknown error",
+    });
+  }
+});
+
+// This also include isMyFriend \\
+app.post("/getuser", (req, res) => {
+  if (req.body.userid && req.body.myid) {
+    connection.query("SELECT * FROM users WHERE users.id=?", req.body.userid, function (suerr, sures) {
+      if (suerr) throw suerr;
+      if (sures.length) {
+        connection.query("SELECT * FROM friends WHERE UserID=? AND FriendID=?", [req.body.myid, req.body.userid], function (sferr, sfres) {
+          if (sferr) throw sferr;
+          return res.status(200).json({
+            succes: true,
+            user: sures[0],
+            ismyfriend: Boolean(sfres.length),
+          });
+        });
+      } else {
+        return res.status(200).json({
+          success: false,
+          user: null,
+        });
+      }
+    });
+  } else {
+    return res.status(200).json({
+      success: false,
+      message: "Unknown error",
+    });
+  }
+});
+
 app.post("/getonlinefriends", async (req, res) => {
   if (req.body.myid) {
     const result = await getchats(req.body.myid);
@@ -385,7 +462,7 @@ app.post("/getonlinefriends", async (req, res) => {
 
 app.post("/getallusers", (req, res) => {
   if (req.body.myid) {
-    connection.query("SELECT id, Username, Email, AvatarURL FROM `users` WHERE id!=?", req.body.myid, function (suerr, sures) {
+    connection.query("SELECT id, FullName, Email, AvatarURL FROM `users` WHERE id!=?", req.body.myid, function (suerr, sures) {
       if (suerr) throw suerr;
       if (sures.length) {
         return res.status(200).json({
@@ -445,14 +522,12 @@ app.post("/addfriend", (req, res) => {
           } else {
             connection.query("SELECT * FROM `friends` WHERE UserID=? AND FriendID=?", [req.body.myid, req.body.targetid], function (sferr, sfres) {
               if (sferr) throw sferr;
-              console.log(sfres.length);
               if (sfres.length > 0) {
                 return res.status(200).json({
                   succes: false,
                   message: "The user is already on your friends list!",
                 });
               } else {
-                console.log("3");
                 let info = {
                   UserID: req.body.myid,
                   TargetID: req.body.targetid,
@@ -582,7 +657,7 @@ app.post("/changeuseravatar", (req, res) => {
   if (req.body.avatarurl && req.body.myid) {
     connection.query("UPDATE users SET AvatarURL=? WHERE id=?", [req.body.avatarurl, req.body.myid], function (uaerr, uares) {
       if (uaerr) throw uaerr;
-      console.log(uares);
+      // console.log(uares);
       return res.status(200).json({
         succes: true,
         message: "You've successfully changed your avatar!",
@@ -720,7 +795,7 @@ app.post("/logout", (req, res) => {
 
 app.post("/getmyfriends", (req, res) => {
   if (req.body.myid) {
-    connection.query("SELECT users.id, users.Username, users.AvatarURL FROM friends INNER JOIN users ON users.id=friends.FriendID WHERE UserID=?", req.body.myid, function (sferr, sfres) {
+    connection.query("SELECT users.id, users.FullName, users.AvatarURL FROM friends INNER JOIN users ON users.id=friends.FriendID WHERE UserID=?", req.body.myid, function (sferr, sfres) {
       if (sferr) throw sferr;
       if (sfres.length) {
         return res.status(200).json({
@@ -802,6 +877,7 @@ app.post("/creategroup", (req, res) => {
 
 app.post("/upploadimage", upload.single("file"), async (req, res) => {
   // console.log(req.file.filename);
+  console.log("Image upload");
   console.log(req.file);
   let info = {
     Url: req.file.filename,
@@ -835,16 +911,40 @@ async function getchats(myid) {
   let datas = [];
   for (let i = 0; i < fres.length; i++) {
     const [srmres, srmerr] = await contprom.execute(
-      "SELECT rooms.id, users.id AS UserID, users.Status AS Status, users.Username AS Name, users.AvatarURL, rooms.RoomKey FROM roommembers INNER JOIN users ON roommembers.UserID=users.id INNER JOIN rooms ON rooms.id=roommembers.RoomID WHERE RoomID=? AND UserID!=?",
+      "SELECT rooms.id, users.id AS UserID, users.Status AS Status, users.FullName AS Name, users.AvatarURL, rooms.RoomKey FROM roommembers INNER JOIN users ON roommembers.UserID=users.id INNER JOIN rooms ON rooms.id=roommembers.RoomID WHERE RoomID=? AND UserID!=?",
       [fres[i].id, myid]
+    );
+    const [slmres, slmerr] = await contprom.execute(
+      "SELECT messages.Text, messages.ImageIDs, users.FullName, users.id AS UserID, messages.RoomID, messages.Date FROM `messages` INNER JOIN users ON messages.SenderID = users.id WHERE messages.RoomID = ? ORDER BY Date DESC LIMIT 1;",
+      [fres[i].id]
     );
     if (srmres.length > 1) {
       //Group message
       fres[i].Notification = 0;
+      fres[i].isGroup = true;
+      if (slmres.length) {
+        fres[i].LastMessage = {
+          Text: slmres[0].Text,
+          Date: slmres[0].Date,
+          SenderID: slmres[0].UserID,
+          SenderName: slmres[0].FullName,
+          ImageIDs: slmres[0].ImageIDs,
+        };
+      }
       datas.push(fres[i]);
     } else {
       //Private message
       srmres[0].Notification = 0;
+      srmres[0].isGroup = false;
+      if (slmres.length) {
+        srmres[0].LastMessage = {
+          Text: slmres[0].Text,
+          Date: slmres[0].Date,
+          SenderID: slmres[0].UserID,
+          SenderName: slmres[0].FullName,
+          ImageIDs: slmres[0].ImageIDs,
+        };
+      }
       // srmres[0].Status = "Offline";
       datas.push(srmres[0]);
     }
@@ -861,7 +961,7 @@ async function getfriendandrooms(myid) {
   });
 
   let returndata = [];
-  const [fres, ferr] = await contprom.execute("SELECT friends.UserID, friends.FriendID, users.Username, users.AvatarURL FROM friends, users WHERE UserID=? AND users.id = friends.FriendID", [myid]);
+  const [fres, ferr] = await contprom.execute("SELECT friends.UserID, friends.FriendID, users.FullName, users.AvatarURL FROM friends, users WHERE UserID=? AND users.id = friends.FriendID", [myid]);
 
   const [myrmres, myrmerr] = await contprom.execute("SELECT * FROM roommembers WHERE UserID=?", [myid]);
   for (let k = 0; k < fres.length; k++) {
@@ -872,7 +972,7 @@ async function getfriendandrooms(myid) {
           const [srmres, srmerr] = await contprom.execute("SELECT * FROM rooms WHERE id=?", [frres[j].RoomID]);
           let info = {
             FreindID: fres[k].FriendID,
-            Username: fres[k].Username,
+            FullName: fres[k].FullName,
             AvatarURL: fres[k].AvatarURL,
             RoomKey: srmres[0].RoomKey,
             RoomID: srmres[0].id,

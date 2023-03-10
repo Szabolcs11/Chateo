@@ -405,7 +405,7 @@ function ChatComponent(props) {
               RoomID,
               RoomKey,
               Text,
-              Username,
+              FullName,
               ImageIDs,
             } = cb.messagedatas;
             setMessages(
@@ -418,7 +418,7 @@ function ChatComponent(props) {
                   RoomID: RoomID,
                   RoomKey: RoomKey,
                   Text: DecodeMessage(messagetext, partnerdatas.RoomKey),
-                  Username: Username,
+                  FullName: FullName,
                   ImageIDs: ImageIDs ? ImageIDs.toString() : "",
                 },
               ])
@@ -429,7 +429,6 @@ function ChatComponent(props) {
       );
       setImageURL([]);
     } else if (ImageURL && ImageURL.length > 0) {
-      // console.log("Most csak kepek");
       var imagesurls = [];
       if (ImageURL.length > 0) {
         for (let i = 0; i < ImageURL.length; i++) {
@@ -441,7 +440,6 @@ function ChatComponent(props) {
             data,
           });
           imagesurls.push(cc_res.data.file);
-          // console.log(cc_res.data);
         }
       }
 
@@ -460,7 +458,7 @@ function ChatComponent(props) {
               RoomID,
               RoomKey,
               Text,
-              Username,
+              FullName,
               ImageIDs,
             } = cb.messagedatas;
             // console.log("ImgUrls2", ImageIDs);
@@ -473,7 +471,7 @@ function ChatComponent(props) {
                 RoomID: RoomID,
                 RoomKey: RoomKey,
                 Text: Text,
-                Username: Username,
+                FullName: FullName,
                 ImageIDs: ImageIDs ? ImageIDs.toString() : "",
               },
             ]);
@@ -681,7 +679,7 @@ function ChatComponent(props) {
                           }}
                           src={apiurl + "UsersProfileImg/" + f.AvatarURL}
                         />
-                        <div style={{ fontSize: 24 }}>{f.Username}</div>
+                        <div style={{ fontSize: 24 }}>{f.FullName}</div>
                         {f.Selected ? (
                           <div
                             onClick={() => {

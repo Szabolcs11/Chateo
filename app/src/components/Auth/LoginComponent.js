@@ -3,7 +3,7 @@ import { handleLogin } from "../../App";
 import { changeAuthPage } from "../../pages/Auth/Auth";
 
 function LoginComponent() {
-  const [username, setUsername] = useState();
+  const [email, setEmail] = useState();
   const [password, setPassword] = useState();
   return (
     <div className="Auth-Main">
@@ -14,11 +14,11 @@ function LoginComponent() {
 
         <div className="Auth-Main-Content">
           <input
-            type="text"
-            placeholder="Username"
+            type="email"
+            placeholder="Email"
             className="Auth-Input"
             onChange={(e) => {
-              setUsername(e.target.value);
+              setEmail(e.target.value);
             }}
           />
           <input
@@ -32,7 +32,7 @@ function LoginComponent() {
 
           <div
             className="Auth-Main-Button"
-            onClick={() => handleLogin(username, password)}
+            onClick={() => handleLogin(email, password)}
           >
             Login
           </div>

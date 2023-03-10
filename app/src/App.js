@@ -8,7 +8,7 @@ import "react-toastify/dist/ReactToastify.css";
 
 import { apiurl } from "./../src/config/globalVariables";
 
-import Auth from "./pages/Auth/Auth";
+import Auth, { changeAuthPage } from "./pages/Auth/Auth";
 import Error404 from "./pages/Error404";
 import Home from "./pages/Home";
 import Messages from "./pages/Messages";
@@ -58,11 +58,11 @@ function App() {
     navigate("/");
   };
 
-  handleLogin = (username, password) => {
+  handleLogin = (email, password) => {
     axios
       .post(apiurl + "login", {
         headers: { "Access-Control-Allow-Origin": "*" },
-        Username: username,
+        Email: email,
         Password: password,
       })
       .then((res) => {
@@ -80,20 +80,49 @@ function App() {
       });
   };
 
-  handleRegister = (username, email, password) => {
-    axios
-      .post(apiurl + "register", {
-        Username: username,
-        Password: password,
-        Email: email,
-      })
-      .then((res) => {
-        if (res.data.succes) {
-          toast.success(res.data.message);
-        } else {
-          toast.error(res.data.message);
-        }
-      });
+  const hasNumber = (myString) => {
+    return /\d/.test(myString);
+  };
+
+  handleRegister = (FullName, Email, Password, ConfirmPassword) => {
+    if (
+      FullName === "" ||
+      Email === "" ||
+      Password === "" ||
+      ConfirmPassword === ""
+    ) {
+      toast.error("Please fill in all fields!");
+    } else if (Password === ConfirmPassword) {
+      if (Email.includes("@") === false) {
+        toast.error("Please enter a valid email!");
+        return;
+      }
+      if (Password.length < 8) {
+        toast.error("Password must be at least 8 characters long!");
+        return;
+      }
+      if (hasNumber(Password) === false) {
+        toast.error("Password must contain at least one number!");
+        return;
+      }
+      axios
+        .post(apiurl + "register", {
+          FullName: FullName,
+          Password: Password,
+          ConfirmPassword: ConfirmPassword,
+          Email: Email,
+        })
+        .then((res) => {
+          if (res.data.succes) {
+            toast.success(res.data.message);
+            changeAuthPage("login");
+          } else {
+            toast.error(res.data.message);
+          }
+        });
+    } else {
+      toast.error("Passwords do not match!");
+    }
   };
 
   handleLogout = (userdatas) => {
