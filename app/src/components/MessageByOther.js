@@ -3,6 +3,7 @@ import { formatDate } from "../config/globalFunctions";
 import { apiurl } from "../config/globalVariables";
 
 function MessageByOther({ avatar, text, date, last, imageurls, callback }) {
+  // console.log(imageurls);
   return (
     <div className="main-container-message-by-other-container">
       <div className="main-container-message-by-other">

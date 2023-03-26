@@ -16,10 +16,7 @@ function Messages(props) {
           <MessagesSearchBarComponent />
         </div>
         <div className="people">
-          <Persons
-            myid={props.userdatas.id}
-            username={props.userdatas.Username}
-          />
+          <Persons myid={props.userdatas.id} />
         </div>
 
         <div className="main">

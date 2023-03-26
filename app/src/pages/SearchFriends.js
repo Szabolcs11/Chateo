@@ -86,7 +86,7 @@ function SearchFriends(props) {
       let temp = users;
       let newarr = [];
       temp.forEach((e) => {
-        let name = e.Username.toLowerCase();
+        let name = e.FullName.toLowerCase();
         if (name.includes(a.target.value.toLowerCase())) {
           newarr.push(e);
         }
@@ -121,7 +121,7 @@ function SearchFriends(props) {
                   <Fragment key={u.id}>
                     <SearchedUserComponent
                       id={u.id}
-                      name={u.Username}
+                      FullName={u.FullName}
                       avatar={u.AvatarURL}
                       callback={(cb) => {
                         handleAddFriend(cb);
@@ -146,7 +146,7 @@ function SearchFriends(props) {
                     <IncommingFriendRequest
                       key={u.id}
                       id={u.id}
-                      name={u.Username}
+                      FullName={u.FullName}
                       avatar={u.AvatarURL}
                       incomcb={(cb) => {
                         handleFriendRequest(cb);

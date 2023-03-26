@@ -1,4 +1,5 @@
 export const apiurl = "http://localhost:2004/";
+// export const apiurl = "https://dev.api.chateo.kekenj-sabolc.me/";
 
 export const emojis = [
   ["😀", ":D"],

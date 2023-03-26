@@ -3,7 +3,7 @@ import x from "../assets/svgs/x.svg";
 import pipe from "../assets/svgs/pipe.svg";
 import { apiurl } from "../config/globalVariables";
 
-function IncommingFriendRequest({ id, avatar, name, incomcb }) {
+function IncommingFriendRequest({ id, avatar, FullName, incomcb }) {
   return (
     <div className="tab" style={{ cursor: "default" }}>
       <div className="tab-left">
@@ -14,7 +14,7 @@ function IncommingFriendRequest({ id, avatar, name, incomcb }) {
           style={{ width: "50px", height: "50px", borderRadius: "50%" }}
         />
         <div className="tab-datas">
-          <div className="tab-datas-name">{name}</div>
+          <div className="tab-datas-name">{FullName}</div>
         </div>
       </div>
       <div className="tab-datasandnotifications" style={{ width: "100%" }}>

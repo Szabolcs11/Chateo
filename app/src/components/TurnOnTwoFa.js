@@ -7,7 +7,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { changecheckedstate } from "./TwoFaComponent";
 
-function TurnOnTwoFa({ userid, username }) {
+function TurnOnTwoFa({ userid }) {
   const [url, setUrl] = useState();
   const [secret, setSecret] = useState();
 

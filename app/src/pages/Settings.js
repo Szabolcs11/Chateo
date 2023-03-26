@@ -85,18 +85,8 @@ function Settings(props) {
         // paddingLeft: 40,
       }}
     >
-      {enableTwoFa && (
-        <TurnOnTwoFa
-          userid={props.userdatas.id}
-          username={props.userdatas.Username}
-        />
-      )}
-      {disableTwoFa && (
-        <TurnOffTwoFa
-          userid={props.userdatas.id}
-          username={props.userdatas.Username}
-        />
-      )}
+      {enableTwoFa && <TurnOnTwoFa userid={props.userdatas.id} />}
+      {disableTwoFa && <TurnOffTwoFa userid={props.userdatas.id} />}
       <div className="SettingsContainer">
         <div style={{ padding: 40 }}>
           <div
@@ -112,7 +102,7 @@ function Settings(props) {
               <UserDatasComponent
                 UserID={props.userdatas.id}
                 Avatar={props.userdatas.AvatarURL}
-                Username={props.userdatas.Username}
+                FullName={props.userdatas.FullName}
               />
             </div>
             <div style={{ width: "50%" }}>

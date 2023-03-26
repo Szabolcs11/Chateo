@@ -23,7 +23,7 @@ function DecryptMessage(message, key) {
   for (var i = 0; i < message.length; i++) {
     num = num * 10 + (message[i] - "0");
     if (num >= 32 * key && num <= 255 * key) {
-      var ch = String.fromCharCode(num / key);
+      var ch = String.fromCharCode(Math.round(num / key));
       if (ch != "" && ch != null) {
         stringres = stringres + ch;
       }

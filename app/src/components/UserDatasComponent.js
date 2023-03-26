@@ -6,7 +6,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { avatarchanged } from "./Navbar";
 
-function UserDatasComponent({ UserID, Avatar, Username }) {
+function UserDatasComponent({ UserID, Avatar, FullName }) {
   const [AvatarSrc, setAvatarSrc] = useState(Avatar);
 
   const handleChange = async (e) => {
@@ -90,7 +90,7 @@ function UserDatasComponent({ UserID, Avatar, Username }) {
           color: "white",
         }}
       >
-        {Username}
+        {FullName}
       </div>
     </div>
   );
