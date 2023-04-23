@@ -18,6 +18,10 @@ import SearchFriends from "./pages/SearchFriends";
 import AuthenticateTwoFa from "./pages/Auth/AuthenticateTwoFa";
 
 import io from "socket.io-client";
+import EmailVerifyResponse from "./pages/Auth/EmailVerifyResponse";
+import ForgotPassword from "./pages/Auth/ForgotPassword";
+import ResetPassword from "./pages/Auth/ResetPassword";
+import { registerresponse } from "./components/Auth/RegisterComponent";
 
 export let handleLogin;
 export let handleTwoFaLogin;
@@ -66,13 +70,14 @@ function App() {
         Password: password,
       })
       .then((res) => {
-        //console.log(res.data);
+        console.log(res.data);
         if (res.data.succes) {
           if (res.data.twofalogin) {
             navigate("/authenticate/" + res.data.Token);
           } else {
             setCookie("sessiontoken", res.data.token);
             setUser(res.data.user);
+            navigate("/");
           }
         } else {
           toast.error(res.data.message);
@@ -85,12 +90,7 @@ function App() {
   };
 
   handleRegister = (FullName, Email, Password, ConfirmPassword) => {
-    if (
-      FullName === "" ||
-      Email === "" ||
-      Password === "" ||
-      ConfirmPassword === ""
-    ) {
+    if (FullName === "" || Email === "" || Password === "" || ConfirmPassword === "") {
       toast.error("Please fill in all fields!");
     } else if (Password === ConfirmPassword) {
       if (Email.includes("@") === false) {
@@ -114,13 +114,16 @@ function App() {
         })
         .then((res) => {
           if (res.data.succes) {
+            registerresponse();
             toast.success(res.data.message);
             changeAuthPage("login");
           } else {
+            registerresponse();
             toast.error(res.data.message);
           }
         });
     } else {
+      registerresponse();
       toast.error("Passwords do not match!");
     }
   };
@@ -155,14 +158,8 @@ function App() {
         <Routes>
           <Route element={<MainLayout userdatas={user} />}>
             <Route path="/" element={<Home />} />
-            <Route
-              path="/message"
-              element={<Messages userdatas={user} socket={socket} />}
-            />
-            <Route
-              path="/search"
-              element={<SearchFriends userdatas={user} />}
-            />
+            <Route path="/message" element={<Messages userdatas={user} socket={socket} />} />
+            <Route path="/search" element={<SearchFriends userdatas={user} />} />
             <Route path="/settings" element={<Settings userdatas={user} />} />
           </Route>
           <Route path="*" element={<Error404 />} />
@@ -188,6 +185,9 @@ function App() {
         <Route path="/" element={<Navigate to="/auth" replace />} />
         <Route path="/auth" element={<Auth />} />
         <Route path="/authenticate/:key" element={<AuthenticateTwoFa />} />
+        <Route path="/emailverify" element={<EmailVerifyResponse />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password/:token" element={<ResetPassword />} />
         <Route path="*" element={<Error404 />} />
       </Routes>
     </>

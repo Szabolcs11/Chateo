@@ -1,6 +1,6 @@
+require("dotenv").config();
 const express = require("express");
 const app = express();
-const port = 2004;
 var path = require("path");
 const mysql = require("mysql");
 
@@ -14,24 +14,36 @@ const { info } = require("console");
 const speakeasy = require("speakeasy");
 const qrcode = require("qrcode");
 
+// Nodemailer \\
+const nodemailer = require("nodemailer");
+
+const nodemailerconfig = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.GMAILUSERNAME,
+    pass: process.env.GMAILPASSWORD,
+  },
+});
+const transporter = nodemailer.createTransport(nodemailerconfig);
+
 var corsOptions = {
-  origin: "http://localhost:3000",
+  origin: process.env.APPURL,
 };
 
 app.use(cors(corsOptions));
 
 const connection = mysql.createPool({
-  host: "localhost",
-  user: "root",
-  password: "",
-  database: "messengerinreact",
+  host: process.env.HOST,
+  user: process.env.USER,
+  password: process.env.PASSWORD,
+  database: process.env.DATABASE,
   connectionLimit: 10,
 });
 connection.getConnection(function (err, connection) {
   if (err) {
     return console.error("error: " + err.message);
   }
-  console.log("Connected to the MySQL server.");
+  console.log("Connected to the MySQL server.\nDatabase:", process.env.DATABASE);
   connection.release();
 });
 app.use(express.json());
@@ -40,8 +52,8 @@ app.use(express.urlencoded({ extended: true }));
 const server = require("http").createServer(app);
 const io = require("socket.io")(server, { cors: { origin: "*" } });
 
-server.listen(port, () => {
-  console.log("Server running", port);
+server.listen(process.env.PORT, () => {
+  console.log("Server running", process.env.PORT);
 });
 
 const storage = multer.diskStorage({
@@ -221,6 +233,226 @@ app.get("/", (req, res) => {
 
 // SELECT rooms.id AS 'RoomID', rooms.RoomKey, messages.id, messages.SenderID, messages.Text, messages.RoomID, messages.Date FROM messages INNER JOIN rooms ON rooms.RoomKey =  WHERE rooms.RoomKey='123456';
 
+app.get("/verifyemail/:Token", (req, res) => {
+  if (req.params.Token) {
+    connection.query("SELECT * FROM verifyemails WHERE Token=?", req.params.Token, function (verr, vres) {
+      if (verr) throw verr;
+      if (vres.length) {
+        connection.query("UPDATE users SET Verified=? WHERE id=?", [1, vres[0].UserID], function (uverr, uverres) {
+          if (uverr) throw uverr;
+          connection.query("DELETE FROM verifyemails WHERE Token=?", req.params.Token, function (dverr, dverres) {
+            if (dverr) throw dverr;
+            res.redirect("http://localhost:3000/emailverify");
+          });
+        });
+      } else {
+        return res.status(200).json({
+          succes: false,
+          message: "Invalid Token!",
+        });
+      }
+    });
+  } else {
+    return res.status(200).json({
+      succes: false,
+      message: "No Token found",
+    });
+  }
+});
+
+app.post("/forgot-password", (req, res) => {
+  if (req.body.email) {
+    connection.query("SELECT * FROM users WHERE Email=?", req.body.email, function (ferr, fres) {
+      if (ferr) throw ferr;
+      if (fres.length) {
+        let info = {
+          UserID: fres[0].id,
+          Token: GenerateToken(32),
+          Date: getFullDate(),
+        };
+        connection.query("SELECT * FROM forgotpasswords WHERE UserID=?", fres[0].id, function (ferr, feres) {
+          if (ferr) throw ferr;
+          if (!feres.length) {
+            connection.query("INSERT INTO forgotpasswords SET ?", info, function (iferr, ifres) {
+              if (iferr) throw iferr;
+              if (ifres.insertId) {
+                const config = {
+                  service: "gmail",
+                  auth: {
+                    user: process.env.GMAILUSERNAME,
+                    pass: process.env.GMAILPASSWORD,
+                  },
+                };
+
+                const transporter = nodemailer.createTransport(config);
+
+                let url = process.env.APPURL + "/reset-password/" + info.Token;
+                let body = `
+                <div style="font-family: Arial, sans-serif; font-size: 16px; line-height: 1.5; color: #333; margin: 0; padding: 0">
+                <div style="display: table; margin: 0 auto">
+        <div style="max-width: 600px">
+          <div style="text-align: center; margin-bottom: 20px">
+            <h2 style="color: #20a090">Forgot Password</h2>
+          </div>
+
+          <p>Hello,</p>
+
+          <p>You have requested to reset your password for your account with us. Please click on the button below to reset your password:</p>
+
+          <a
+            href="${url}"
+            style="
+              color: #20a090;
+              text-decoration: none;
+              display: inline-block;
+              background-color: #20a090;
+              color: #fff;
+              font-weight: bold;
+              font-size: 16px;
+              padding: 10px 20px;
+              border-radius: 4px;
+              text-align: center;
+              text-decoration: none;
+              margin-top: 20px;
+            "
+            >Reset Password</a
+          >
+
+          <p>If you did not request to reset your password, please ignore this email.</p>
+
+          <div style="margin-top: 40px; text-align: center">
+            <p style="font-size: 14px; color: #999; margin-bottom: 10px">&copy; Kekenj Sabolc 2023</p>
+          </div>
+        </div>
+      </div>
+    </div>
+                `;
+                let message = {
+                  from: process.env.GMAILUSERNAME,
+                  to: fres[0].Email,
+                  subject: "Forgot Password",
+                  html: body,
+                };
+                transporter.sendMail(message, (err, info) => {
+                  console.log("Message sent: %s", info.messageId);
+                  return res.status(200).json({
+                    succes: true,
+                    message: "Succesful Password Reset! You email has been sent to the email address.",
+                  });
+                });
+              } else {
+                return res.status(200).json({
+                  succes: false,
+                  message: "Something went wrong!",
+                });
+              }
+            });
+          } else {
+            return res.status(200).json({
+              succes: false,
+              message: "You already requested a password reset",
+            });
+          }
+        });
+      } else {
+        return res.status(200).json({
+          succes: false,
+          message: "No user found with this email!",
+        });
+      }
+    });
+  } else {
+    return res.status(200).json({
+      succes: false,
+      message: "No Email found",
+    });
+  }
+});
+
+app.post("/reset-password", async (req, res) => {
+  if (req.body.Token) {
+    if (req.body.Password && req.body.PasswordConfirm) {
+      if (req.body.Password == req.body.PasswordConfirm) {
+        const hashedPassword = await bcrypt.hash(req.body.Password, 10);
+        connection.query(
+          "SELECT forgotpasswords.UserID, forgotpasswords.Token, forgotpasswords.Date, users.FullName, users.Email FROM forgotpasswords INNER JOIN users ON users.id=forgotpasswords.UserID WHERE forgotpasswords.Token=?;",
+          req.body.Token,
+          function (ferr, fres) {
+            if (ferr) throw ferr;
+            if (fres.length) {
+              connection.query("UPDATE users SET Password=? WHERE id=?", [hashedPassword, fres[0].UserID], function (uperr, upres) {
+                if (uperr) throw uperr;
+                connection.query("DELETE FROM forgotpasswords WHERE Token=?", req.body.Token, function (derr, dres) {
+                  if (derr) throw derr;
+                  // Your password has been reseted emal
+                  const config = {
+                    service: "gmail",
+                    auth: {
+                      user: process.env.GMAILUSERNAME,
+                      pass: process.env.GMAILPASSWORD,
+                    },
+                  };
+
+                  const transporter = nodemailer.createTransport(config);
+
+                  let body = `
+                <div style="border: 1px solid black">
+                  <p>Your password has been resetted</p>
+                  <p>FullName: ${fres[0].FullName}</p>
+                  <p>Date: ${getFullDate()}</p>
+                </div>
+                `;
+                  let message = {
+                    from: "kokeny.szabolcs04@gmail.com",
+                    to: fres[0].Email,
+                    subject: "Your password has been resetted",
+                    html: body,
+                  };
+                  transporter.sendMail(message, (err, info) => {
+                    console.log("Message sent: %s", info.messageId);
+                    return res.status(200).json({
+                      succes: true,
+                      message: "Succesful registraion! You confirm email has been sent to your email address.",
+                    });
+                    if (err) {
+                      console.log("Error occurred. " + err.message);
+                      // return process.exit(1);
+                    }
+                  });
+                  return res.status(200).json({
+                    succes: true,
+                    message: "Succesful Password Reset!",
+                  });
+                });
+              });
+            } else {
+              return res.status(200).json({
+                succes: false,
+                message: "Invalid Token!",
+              });
+            }
+          }
+        );
+      } else {
+        return res.status(200).json({
+          succes: false,
+          message: "Passwords do not match!",
+        });
+      }
+    } else {
+      return res.status(200).json({
+        succes: false,
+        message: "Please fill out all the fields!",
+      });
+    }
+  } else {
+    return res.status(200).json({
+      succes: false,
+      message: "No Token found",
+    });
+  }
+});
+
 app.post("/Register", async (req, res) => {
   if (req.body.FullName && req.body.Password && req.body.Email) {
     const hasdhedPassword = await bcrypt.hash(req.body.Password, 10);
@@ -234,9 +466,90 @@ app.post("/Register", async (req, res) => {
     connection.query("INSERT INTO users SET ?", info, function (iuerr, iures) {
       if (iuerr) throw iuerr;
       if (iures.insertId) {
-        return res.status(200).json({
-          succes: true,
-          message: "Succesful registraion!",
+        const verifyemailmessage = {
+          userID: iures.insertId,
+          Token: GenerateToken(32),
+          Date: getFullDate(),
+        };
+        connection.query("INSERT INTO verifyemails SET ?", verifyemailmessage, function (iverr, ivres) {
+          if (iverr) throw iverr;
+          if (ivres.insertId) {
+            const config = {
+              service: "gmail",
+              auth: {
+                user: process.env.GMAILUSERNAME,
+                pass: process.env.GMAILPASSWORD,
+              },
+            };
+
+            const transporter = nodemailer.createTransport(config);
+
+            let url = "http://localhost:2004/verifyemail/" + verifyemailmessage.Token;
+            let body = `
+            <div style="font-family: Arial, sans-serif; font-size: 16px; line-height: 1.5; color: #333; padding: 0">
+            <div style="display: table; margin: 0 auto">
+              <div style="max-width: 600px">
+                <div style="text-align: center; margin-bottom: 20px">
+                  <h2 style="color: #20a090">Email Verification</h2>
+                </div>
+      
+                <p>Dear User,</p>
+      
+                <p>Thank you for registering with us! To complete the registration process, we require you to verify your email address.</p>
+      
+                <p>Please click on the button below to verify your email:</p>
+      
+                <a
+                  href="${url}"
+                  style="
+                    color: #20a090;
+                    text-decoration: none;
+                    display: inline-block;
+                    background-color: #20a090;
+                    color: #fff;
+                    font-weight: bold;
+                    font-size: 16px;
+                    padding: 10px 20px;
+                    border-radius: 4px;
+                    text-align: center;
+                    text-decoration: none;
+                    margin-top: 20px;
+                  "
+                  >Verify Email</a
+                >
+      
+                <p>If you did not register for our service, please ignore this email.</p>
+      
+                <div style="margin-top: 40px; text-align: center">
+                  <p style="font-size: 14px; color: #999; margin-bottom: 10px">&copy; Kekenj Sabolc 2023</p>
+                </div>
+              </div>
+            </div>
+          </div>
+            `;
+            let message = {
+              from: "kokeny.szabolcs04@gmail.com",
+              to: info.Email,
+              subject: "Verify Email",
+              html: body,
+            };
+            transporter.sendMail(message, (err, info) => {
+              console.log("Message sent: %s", info.messageId);
+              return res.status(200).json({
+                succes: true,
+                message: "Succesful registraion! You confirm email has been sent to your email address.",
+              });
+              if (err) {
+                console.log("Error occurred. " + err.message);
+                // return process.exit(1);
+              }
+            });
+
+            // return res.status(200).json({
+            //   succes: true,
+            //   message: "Succesful registraion! You confirm email has been sent to your email address.",
+            // });
+          }
         });
       }
     });
@@ -253,55 +566,62 @@ app.post("/login", (req, res) => {
     connection.query("SELECT * FROM users WHERE Email=?", req.body.Email, function (suerr, sures) {
       if (suerr) throw suerr;
       if (sures.length) {
-        bcrypt.compare(req.body.Password, sures[0].Password, function (err, isMath) {
-          if (isMath) {
-            if (sures[0].Secret == 0) {
-              let info = {
-                UserID: sures[0].id,
-                Token: GenerateToken(32),
-                Date: getFullDate(),
-                Ip: getIp(req),
-              };
-              connection.query("INSERT INTO sessions SET ?", info, function (iserr, isres) {
-                if (iserr) throw iserr;
-                let data = {
-                  Status: "Online",
-                  LastUpdate: getFullDate(),
+        if (sures[0].Verified == 1) {
+          bcrypt.compare(req.body.Password, sures[0].Password, function (err, isMath) {
+            if (isMath) {
+              if (sures[0].Secret == 0) {
+                let info = {
+                  UserID: sures[0].id,
+                  Token: GenerateToken(32),
+                  Date: getFullDate(),
+                  Ip: getIp(req),
                 };
-                connection.query("UPDATE users SET Status=? WHERE id=?", [JSON.stringify(data), sures[0].id], function (uuerr, uures) {
-                  if (uuerr) throw uuerr;
-                  return res.status(200).json({
-                    succes: true,
-                    message: "Succesful Login!",
-                    token: info.Token,
-                    user: sures[0],
+                connection.query("INSERT INTO sessions SET ?", info, function (iserr, isres) {
+                  if (iserr) throw iserr;
+                  let data = {
+                    Status: "Online",
+                    LastUpdate: getFullDate(),
+                  };
+                  connection.query("UPDATE users SET Status=? WHERE id=?", [JSON.stringify(data), sures[0].id], function (uuerr, uures) {
+                    if (uuerr) throw uuerr;
+                    return res.status(200).json({
+                      succes: true,
+                      message: "Succesful Login!",
+                      token: info.Token,
+                      user: sures[0],
+                    });
                   });
                 });
-              });
-            } else {
-              // Ha van 2FA
-              let info = {
-                UserID: sures[0].id,
-                Token: GenerateToken(32),
-                Date: getFullDate(),
-                Ip: getIp(req),
-              };
-              connection.query("INSERT INTO twofalogins SET ?", info, function (iterr, itres) {
-                if (iterr) throw iterr;
-                return res.status(200).json({
-                  succes: true,
-                  twofalogin: true,
-                  Token: info.Token,
+              } else {
+                // Ha van 2FA
+                let info = {
+                  UserID: sures[0].id,
+                  Token: GenerateToken(32),
+                  Date: getFullDate(),
+                  Ip: getIp(req),
+                };
+                connection.query("INSERT INTO twofalogins SET ?", info, function (iterr, itres) {
+                  if (iterr) throw iterr;
+                  return res.status(200).json({
+                    succes: true,
+                    twofalogin: true,
+                    Token: info.Token,
+                  });
                 });
+              }
+            } else {
+              return res.status(200).json({
+                succes: false,
+                message: "Incorrect password!",
               });
             }
-          } else {
-            return res.status(200).json({
-              succes: false,
-              message: "Incorrect password!",
-            });
-          }
-        });
+          });
+        } else {
+          return res.status(200).json({
+            succes: false,
+            message: "You have to verify your email!",
+          });
+        }
       } else {
         return res.status(200).json({
           succes: false,
@@ -685,7 +1005,7 @@ app.post("/changepassword", async (req, res) => {
         if (sures.length) {
           bcrypt.compare(req.body.currpass, sures[0].Password, function async(err, isMath) {
             if (isMath) {
-              connection.query("UPDATE users SET Password=?", hasdhedPassword, function (userr, usres) {
+              connection.query("UPDATE users SET Password=? WHERE id=?", [hasdhedPassword, req.body.myid], function (userr, usres) {
                 if (userr) throw userr;
                 return res.status(200).json({
                   succes: true,
@@ -898,9 +1218,10 @@ app.post("/upploadimage", upload.single("file"), async (req, res) => {
 async function getchats(myid) {
   const mysqlprom = require("mysql2/promise");
   const contprom = await mysqlprom.createConnection({
-    host: "localhost",
-    user: "root",
-    database: "messengerinreact",
+    host: process.env.HOST,
+    user: process.env.USER,
+    password: process.env.PASSWORD,
+    database: process.env.DATABASE,
   });
 
   const [fres, ferr] = await contprom.execute(
@@ -955,9 +1276,10 @@ async function getchats(myid) {
 async function getfriendandrooms(myid) {
   const mysqlprom = require("mysql2/promise");
   const contprom = await mysqlprom.createConnection({
-    host: "localhost",
-    user: "root",
-    database: "messengerinreact",
+    host: process.env.HOST,
+    user: process.env.USER,
+    password: process.env.PASSWORD,
+    database: process.env.DATABASE,
   });
 
   let returndata = [];
@@ -990,9 +1312,10 @@ async function getfriendandrooms(myid) {
 async function getmygroups(myid) {
   const mysqlprom = require("mysql2/promise");
   const contprom = await mysqlprom.createConnection({
-    host: "localhost",
-    user: "root",
-    database: "messengerinreact",
+    host: process.env.HOST,
+    user: process.env.USER,
+    password: process.env.PASSWORD,
+    database: process.env.DATABASE,
   });
 
   const [srres, srerr] = await contprom.execute(
@@ -1266,9 +1589,10 @@ app.post("/deletefriend", async (req, res) => {
 async function handledeletefriend(myid, friendid) {
   const mysqlprom = require("mysql2/promise");
   const contprom = await mysqlprom.createConnection({
-    host: "localhost",
-    user: "root",
-    database: "messengerinreact",
+    host: process.env.HOST,
+    user: process.env.USER,
+    password: process.env.PASSWORD,
+    database: process.env.DATABASE,
   });
 
   const [mysrres, mrsrerr] = await contprom.execute("SELECT * FROM roommembers WHERE UserID=?", [myid]);

@@ -71,9 +71,7 @@ function AuthenticateTwoFa() {
             boxSizing: "border-box",
           }}
         >
-          <div style={{ textAlign: "center", fontSize: 28, fontWeight: 500 }}>
-            Enter Two-Factor Authentication code
-          </div>
+          <div style={{ textAlign: "center", fontSize: 28, fontWeight: 500 }}>Enter Two-Factor Authentication code</div>
           <div
             style={{
               width: "100%",
@@ -88,12 +86,7 @@ function AuthenticateTwoFa() {
               <img src={security} />
             </div>
             <div>
-              <input
-                onChange={(e) => setCode(e.target.value)}
-                placeholder="Type here the code"
-                className="Input-Field"
-                type="text"
-              />
+              <input onChange={(e) => setCode(e.target.value)} placeholder="Type here the code" className="Input-Field" type="text" />
             </div>
             <div onClick={() => handleVerifyCode()} className="Verify-Button">
               Verify

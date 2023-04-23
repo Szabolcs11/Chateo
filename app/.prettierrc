@@ -1,5 +1,6 @@
 {
   "editor.formatOnSave": true,
   "tabWidth": 2,
-  "useTabs": false
+  "useTabs": false,
+  "printWidth": 140
 }

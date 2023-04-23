@@ -30,16 +30,13 @@ function LoginComponent() {
             }}
           />
 
-          <div
-            className="Auth-Main-Button"
-            onClick={() => handleLogin(email, password)}
-          >
+          <div className="forgotpassword">
+            <a href="/forgot-password">Forgot Password?</a>
+          </div>
+          <div className="Auth-Main-Button" onClick={() => handleLogin(email, password)}>
             Login
           </div>
-          <div
-            className="Auth-Main-Button"
-            onClick={() => changeAuthPage("register")}
-          >
+          <div className="Auth-Main-Button" onClick={() => changeAuthPage("register")}>
             Register
           </div>
         </div>
