@@ -6,7 +6,7 @@ import { useCookies } from "react-cookie";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-import { apiurl } from "./../src/config/globalVariables";
+import { apiurl, socketurl } from "./../src/config/globalVariables";
 
 import Auth, { changeAuthPage } from "./pages/Auth/Auth";
 import Error404 from "./pages/Error404";
@@ -25,7 +25,7 @@ export let handleRegister;
 export let handleLogout;
 
 function App() {
-  const socket = io.connect(apiurl);
+  const socket = io.connect(socketurl);
   // console.log("app render");
   const [user, setUser] = useState();
   const navigate = useNavigate();

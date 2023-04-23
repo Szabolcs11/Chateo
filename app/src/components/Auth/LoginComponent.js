@@ -40,7 +40,7 @@ function LoginComponent() {
             className="Auth-Main-Button"
             onClick={() => changeAuthPage("register")}
           >
-            Redirect to Register
+            Register
           </div>
         </div>
       </div>

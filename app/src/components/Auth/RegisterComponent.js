@@ -60,13 +60,13 @@ function RegisterComponent() {
               )
             }
           >
-            Regitser
+            Register
           </div>
           <div
             className="Auth-Main-Button"
             onClick={() => changeAuthPage("login")}
           >
-            Redirect to Login
+            Login
           </div>
         </div>
       </div>

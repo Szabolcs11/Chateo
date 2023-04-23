@@ -30,7 +30,8 @@
 .Auth-Container-Title {
   /* color: #5322BC; */
   /* color: #000000; */
-  color: #6e00ff;
+  /* color: #6e00ff; */
+  color: #20a090;
   font-family: "Roboto", sans-serif;
   font-weight: 900;
   font-size: 40px;
@@ -43,7 +44,8 @@
   height: 1px;
   /* background-color: #5322BC; */
   background-color: #000000;
-  background-color: #6e00ff;
+  /* background-color: #6e00ff; */
+  background-color: #20a090;
 }
 
 .Auth-Main-Content {
@@ -66,7 +68,8 @@
   background: #ffffff;
   box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
   border-radius: 15px;
-  color: #6e00ff;
+  /* color: #6e00ff; */
+  color: #20a090;
 }
 
 .Auth-Main-Button {
@@ -83,7 +86,8 @@
   font-size: 20px;
   box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
   cursor: pointer;
-  background-color: #6e00ff;
+  /* background-color: #6e00ff; */
+  background-color: #20a090;
   color: white;
 }
 

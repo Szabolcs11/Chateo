@@ -30,7 +30,8 @@
   width: 26px;
   left: 4px;
   bottom: 4px;
-  background-color: #6e00ff;
+  /* background-color: #6e00ff; */
+  background-color: #20a090;
   -webkit-transition: 0.4s;
   transition: 0.4s;
 }

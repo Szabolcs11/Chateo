@@ -59,6 +59,7 @@ function SearchFriends(props) {
   const handleFriendRequest = (cb) => {
     axios
       .post(apiurl + "handlefriendrequest", {
+        // headers: { "Access-Control-Allow-Origin": "*" },
         myid: props.userdatas.id,
         data: cb,
       })

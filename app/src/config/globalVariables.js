@@ -1,5 +1,9 @@
-export const apiurl = "http://localhost:2004/";
+// export const apiurl = "http://localhost:2004/";
 // export const apiurl = "https://dev.api.chateo.kekenj-sabolc.me/";
+// export const apiurl = "https://dev.api.chateo.kekenj-sabolc.me/";
+export const apiurl = "http://localhost:2004/";
+// export const socketurl = "https://oyster-app-nnxja.ondigitalocean.app/";
+export const socketurl = "http://localhost:2004/";
 
 export const emojis = [
   ["😀", ":D"],

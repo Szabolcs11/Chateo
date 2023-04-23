@@ -178,7 +178,8 @@ function Persons(props) {
             onClick={() => createNewGroup()}
             style={{
               height: "50%",
-              backgroundColor: "#5d17a4",
+              // backgroundColor: "#5d17a4",
+              backgroundColor: "#20a090",
               color: "white",
               padding: 6,
               borderRadius: 15,

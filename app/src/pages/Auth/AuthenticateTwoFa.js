@@ -52,7 +52,8 @@ function AuthenticateTwoFa() {
         style={{
           width: 600,
           height: 400,
-          backgroundColor: "#6e00ff",
+          // backgroundColor: "#6e00ff",
+          backgroundColor: "#24786d",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",

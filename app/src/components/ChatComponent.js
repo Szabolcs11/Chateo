@@ -650,7 +650,8 @@ function ChatComponent(props) {
                   }}
                   src={blackx}
                 />
-                <p style={{ fontSize: 30, color: "#6e00ff", fontWeight: 600 }}>
+                {/* <p style={{ fontSize: 30, color: "#6e00ff", fontWeight: 600 }}> */}
+                <p style={{ fontSize: 30, color: "#20a090", fontWeight: 600 }}>
                   Select Members
                 </p>
                 <div
@@ -727,7 +728,8 @@ function ChatComponent(props) {
             </div>
           )}
 
-          <div style={{ fontSize: 36, color: "#6e00ff", fontWeight: 600 }}>
+          {/* <div style={{ fontSize: 36, color: "#6e00ff", fontWeight: 600 }}> */}
+          <div style={{ fontSize: 36, color: "#20a090", fontWeight: 600 }}>
             <div
               onClick={() => setCreateGroup(false)}
               style={{ position: "absolute", left: 10, cursor: "pointer" }}
@@ -823,7 +825,8 @@ function ChatComponent(props) {
                 <div
                   onClick={() => setSelectUsers(!selectUsers)}
                   style={{
-                    backgroundColor: "#6e00ff",
+                    // backgroundColor: "#6e00ff",
+                    backgroundColor: "#20a090",
                     borderRadius: 20,
                     padding: 10,
                     color: "white",
@@ -838,7 +841,8 @@ function ChatComponent(props) {
                 <div
                   onClick={() => handleCreateGroup()}
                   style={{
-                    backgroundColor: "#6e00ff",
+                    // backgroundColor: "#6e00ff",
+                    backgroundColor: "#20a090",
                     borderRadius: 20,
                     padding: 10,
                     color: "white",
