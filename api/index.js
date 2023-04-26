@@ -1089,7 +1089,7 @@ app.get("/UsersProfileImg/:id", (req, res) => {
 
 app.get("/Images/:id", (req, res) => {
   var options = {
-    root: path.join("./public/Images/"),
+    root: path.join("./public/UsersProfileImg/"),
   };
 
   var fileName = req.params.id;
