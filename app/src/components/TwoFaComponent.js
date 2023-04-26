@@ -45,7 +45,8 @@ function TwoFaComponent({ userid }) {
         style={{
           maxWidth: 500,
           height: 200,
-          backgroundColor: "#6E00FF",
+          // backgroundColor: "#6E00FF",
+          backgroundColor: "#20a090",
           borderRadius: 25,
           display: "flex",
           alignItems: "center",

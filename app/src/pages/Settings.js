@@ -122,7 +122,7 @@ function Settings(props) {
           >
             <input
               className="Input"
-              type="text"
+              type="password"
               placeholder="Current Password"
               style={{
                 width: 300,
@@ -141,7 +141,7 @@ function Settings(props) {
             />
             <input
               className="Input"
-              type="text"
+              type="password"
               placeholder="New Password"
               style={{
                 width: 300,
@@ -160,7 +160,7 @@ function Settings(props) {
             />
             <input
               className="Input"
-              type="text"
+              type="password"
               placeholder="New Password 2x"
               style={{
                 width: 300,
@@ -183,7 +183,8 @@ function Settings(props) {
               style={{
                 width: 300,
                 height: 60,
-                backgroundColor: "#6E00FF",
+                // backgroundColor: "#6E00FF",
+                backgroundColor: "#20a090",
                 borderRadius: 25,
                 color: "white",
                 display: "flex",

@@ -6,7 +6,9 @@
 }
 
 .NavigationSidebar {
-  background-color: #6e00ff;
+  /* background-color: #6e00ff; */
+  /* background-color: #20a090; */
+  background-color: #24786d;
   /* width: 9%; */
   /* width: 7%; */
   width: 120px;
@@ -16,7 +18,8 @@
 }
 
 .MyProfile {
-  border: 4px solid #5322bc;
+  /* border: 4px solid #5322bc; */
+  border: 4px solid #24786d;
   border-radius: 50%;
   height: 82px;
   width: 82px;
@@ -62,7 +65,8 @@
 }
 
 #selected {
-  background-color: #612dd1e5;
+  /* background-color: #612dd1e5; */
+  background-color: #20a090;
   box-shadow: -7px 0px 0px #f3b559 inset;
 }
 

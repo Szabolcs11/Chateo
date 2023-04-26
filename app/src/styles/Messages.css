@@ -407,7 +407,8 @@
   font-size: 26px;
   font-weight: 400;
   height: 100%;
-  background-color: #6e00ff;
+  /* background-color: #6e00ff; */
+  background-color: #20a090;
   border-radius: 25px;
   display: flex;
   align-items: center;
@@ -543,7 +544,8 @@
   /* height: 78px; */
   width: 70%;
   height: 100%;
-  background-color: #6e00ff;
+  /* background-color: #6e00ff; */
+  background-color: #20a090;
   border-radius: 20px;
 
   display: flex;

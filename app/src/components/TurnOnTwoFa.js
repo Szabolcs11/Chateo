@@ -63,7 +63,8 @@ function TurnOnTwoFa({ userid }) {
         style={{
           width: "50%",
           height: "60%",
-          backgroundColor: "rgba(97, 45, 209, 0.95)",
+          // backgroundColor: "rgba(97, 45, 209, 0.95)",
+          backgroundColor: "#20a090",
           position: "relative",
           borderRadius: 25,
           color: "white",
@@ -154,6 +155,8 @@ function TurnOnTwoFa({ userid }) {
                     height: 50,
                     backgroundColor: "red",
                     backgroundColor: "#6E00FF",
+                    backgroundColor: "#fff",
+                    color: "#20a090",
                     border: "1px solid #FFFFFF",
                     borderRadius: 20,
                     display: "flex",
