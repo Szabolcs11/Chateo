@@ -57,7 +57,7 @@ function App() {
     //console.log(userdatas);
     //console.log(token);
     setUser(userdatas);
-    setCookie("sessiontoken", token);
+    setCookie("sessiontoken", token, { maxAge: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7) });
     toast.success("Succesful login!");
     navigate("/");
   };
@@ -75,7 +75,7 @@ function App() {
           if (res.data.twofalogin) {
             navigate("/authenticate/" + res.data.Token);
           } else {
-            setCookie("sessiontoken", res.data.token);
+            setCookie("sessiontoken", res.data.token, { maxAge: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7) });
             setUser(res.data.user);
             navigate("/");
           }
@@ -92,17 +92,21 @@ function App() {
   handleRegister = (FullName, Email, Password, ConfirmPassword) => {
     if (FullName === "" || Email === "" || Password === "" || ConfirmPassword === "") {
       toast.error("Please fill in all fields!");
+      registerresponse();
     } else if (Password === ConfirmPassword) {
       if (Email.includes("@") === false) {
         toast.error("Please enter a valid email!");
+        registerresponse();
         return;
       }
       if (Password.length < 8) {
         toast.error("Password must be at least 8 characters long!");
+        registerresponse();
         return;
       }
       if (hasNumber(Password) === false) {
         toast.error("Password must contain at least one number!");
+        registerresponse();
         return;
       }
       axios

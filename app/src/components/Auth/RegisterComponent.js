@@ -6,10 +6,10 @@ import LoadingComponent from "../LoadingComponent";
 export let registerresponse;
 
 function RegisterComponent() {
-  const [regFullName, setRegFullName] = useState();
-  const [regEmail, setRegEmail] = useState();
-  const [regPassword, setRegPassword] = useState();
-  const [confirmRegPassword, setConfirmRegPassword] = useState();
+  const [regFullName, setRegFullName] = useState("");
+  const [regEmail, setRegEmail] = useState("");
+  const [regPassword, setRegPassword] = useState("");
+  const [confirmRegPassword, setConfirmRegPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   registerresponse = () => {

@@ -9,6 +9,15 @@ const multer = require("multer");
 const cors = require("cors");
 const { info } = require("console");
 
+// Firebase \\
+const admin = require("firebase-admin");
+const serviceAccount = require("./chateo-d1a4e-firebase-adminsdk-91dul-a521f0fa16.json");
+const firebaseServerKey = require("./firebaseserverkey");
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
+
 // 2FA | QR Code \\
 
 const speakeasy = require("speakeasy");
@@ -50,6 +59,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 const server = require("http").createServer(app);
+// app.use("/peerjs", ExpressPeerServer(server, opinions));
 const io = require("socket.io")(server, { cors: { origin: "*" } });
 
 server.listen(process.env.PORT, () => {
@@ -70,6 +80,44 @@ const upload = multer({ storage, limits: { fieldSize: 25 * 1024 * 1024 } });
 
 io.on("connection", (socket) => {
   //   console.log(socket.id);
+
+  // socket.on("call", ({ userId, type }) => {
+  //   const remoteSocket = userSocketMap.get(userId);
+  //   if (!remoteSocket) {
+  //     socket.emit("call-failed", { message: "User is not online" });
+  //     return;
+  //   }
+  //   socket.to(remoteSocket).emit("call", { type, userId: socket.id });
+  // });
+
+  // socket.on("call-accepted", ({ callerId, signal, type }) => {
+  //   const callerSocketId = userSocketMap.get(callerId);
+  //   if (!callerSocketId) {
+  //     socket.emit("call-failed", { message: "Caller is not online" });
+  //     return;
+  //   }
+  //   socket.to(callerSocketId).emit("call-accepted", { signal, type });
+  // });
+
+  // socket.on("call-user", (data) => {
+  //   console.log(`Received call from ${socket.id} to ${data.to}`);
+
+  //   // Forward the "call-user" message to the target user
+  //   io.to(data.to).emit("call-made", {
+  //     offer: data.offer,
+  //     socket: socket.id,
+  //   });
+  // });
+
+  // // When a client sends an "answer-call" message, forward it to the caller
+  // socket.on("answer-call", (data) => {
+  //   console.log(`Received answer from ${socket.id} to ${data.socket}`);
+
+  //   // Forward the "answer-call" message to the caller
+  //   io.to(data.socket).emit("call-accepted", {
+  //     answer: data.answer,
+  //   });
+  // });
 
   socket.on("getroommessages", (RoomID, cb) => {
     // console.log("kapom");
@@ -161,6 +209,9 @@ io.on("connection", (socket) => {
           };
           connection.query("INSERT INTO messages SET ?", insertarr, function (imerr, imres) {
             if (imerr) throw imerr;
+            // Firebase things \\
+            sendfirebasenotifications(roomKey, senderdatas, message, imageurls);
+            // End of Firebase things \\
             socket.to(roomKey).emit("recivemessage", messageinfo);
             // console.log(messageinfo);
             cb({ succes: true, messagedatas: messageinfo });
@@ -220,7 +271,40 @@ io.on("connection", (socket) => {
 });
 
 app.get("/", (req, res) => {
+  // const html = `
+  // <h1>Test</h1>
+  // `;
+  // const transported = nodemailer.createTransport({
+  //   host: "mail.openjavascript.info",
+  //   port: 465,
+  //   secure: true,
+  //   auth: {
+  //     user: "test@openjavascript.info",
+  //     pass: "test123",
+  //   },
+  // });
+
   res.send("Sziaa");
+  const message = {
+    notification: {
+      title: "New message",
+      body: "You have a new message from a ",
+    },
+    data: {
+      roomkey: "Py0DGz",
+    },
+    token: "fLzgoi5mTHGml7tiXSC4gA:APA91bFNC5ntsDHOhQgcnKzMopwdl-CGRklsjOXOkBfhyGPtN1UdkkaBcKFg7suyL8oMmU-rhASfSY9TJYbU8lCtAZ6VfSlDawEA7GeZ7e4JwhHq8UTPf9U6Hg4MtMruBP0PryKJOBEp",
+  };
+
+  admin
+    .messaging()
+    .send(message)
+    .then((res) => {
+      console.log("Res", res);
+    })
+    .catch((err) => {
+      console.log("Err", err);
+    });
 });
 
 // Roomok amiben benen vagyok - SELECT rooms.id, rooms.RoomKey FROM roommembers INNER JOIN rooms ON roommembers.RoomID = rooms.id WHERE roommembers.UserID=1;
@@ -321,7 +405,7 @@ app.post("/forgot-password", (req, res) => {
           <p>If you did not request to reset your password, please ignore this email.</p>
 
           <div style="margin-top: 40px; text-align: center">
-            <p style="font-size: 14px; color: #999; margin-bottom: 10px">&copy; Kekenj Sabolc 2023</p>
+            <p style="font-size: 14px; color: #999; margin-bottom: 10px">&copy; Chateo 2023</p>
           </div>
         </div>
       </div>
@@ -334,6 +418,7 @@ app.post("/forgot-password", (req, res) => {
                   html: body,
                 };
                 transporter.sendMail(message, (err, info) => {
+                  console.log("err", err);
                   console.log("Message sent: %s", info.messageId);
                   return res.status(200).json({
                     succes: true,
@@ -521,7 +606,7 @@ app.post("/Register", async (req, res) => {
                 <p>If you did not register for our service, please ignore this email.</p>
       
                 <div style="margin-top: 40px; text-align: center">
-                  <p style="font-size: 14px; color: #999; margin-bottom: 10px">&copy; Kekenj Sabolc 2023</p>
+                  <p style="font-size: 14px; color: #999; margin-bottom: 10px">&copy; Chateo 2023</p>
                 </div>
               </div>
             </div>
@@ -1084,7 +1169,13 @@ app.get("/UsersProfileImg/:id", (req, res) => {
   };
 
   var fileName = req.params.id;
-  res.sendFile(fileName, options);
+  res.sendFile(fileName, options, function (err) {
+    if (err) {
+      if (err.code === "ENOENT") {
+        res.sendFile("DefaultAvatar.png", options);
+      }
+    }
+  });
 });
 
 app.get("/Images/:id", (req, res) => {
@@ -1093,7 +1184,13 @@ app.get("/Images/:id", (req, res) => {
   };
 
   var fileName = req.params.id;
-  res.sendFile(fileName, options);
+  res.sendFile(fileName, options, function (err) {
+    if (err) {
+      if (err.code === "ENOENT") {
+        res.sendFile("DefaultAvatar.png", options);
+      }
+    }
+  });
 });
 
 app.post("/logout", (req, res) => {
@@ -1215,6 +1312,97 @@ app.post("/upploadimage", upload.single("file"), async (req, res) => {
   });
 });
 
+async function sendfirebasenotifications(roomkey, senderdatas, message, imageurls) {
+  console.log("sendfirebasenotifications");
+  // console.log(roomkey, senderdatas, message, imageurls);
+  const mysqlprom = require("mysql2/promise");
+  const contprom = await mysqlprom.createConnection({
+    host: process.env.HOST,
+    user: process.env.USER,
+    database: process.env.DATABASE,
+  });
+  const [fres, ferr] = await contprom.execute("SELECT rooms.id, rooms.RoomKey, rooms.Name, rooms.CoverURL AS AvatarURL FROM rooms WHERE rooms.RoomKey=?", [roomkey]);
+  // console.log(fres);
+  const [rmres, rmerr] = await contprom.execute(
+    "SELECT users.id, users.FullName, users.FcmToken FROM rooms INNER JOIN roommembers ON roommembers.RoomID = rooms.id INNER JOIN users ON users.id = roommembers.UserID WHERE rooms.RoomKey=? AND users.id!=?",
+    [fres[0].RoomKey, senderdatas.id]
+  );
+  // console.log(rmres);
+  // Needs to create the format.
+  // console.log(rmres);
+  for (let i = 0; i < rmres.length; i++) {
+    const [srmres, srmerr] = await contprom.execute(
+      "SELECT rooms.id, users.id AS UserID, users.Status AS Status, users.FullName AS Name, users.AvatarURL, rooms.RoomKey FROM roommembers INNER JOIN users ON roommembers.UserID=users.id INNER JOIN rooms ON roommembers.RoomID=rooms.id WHERE rooms.RoomKey=? AND users.id=?",
+      [fres[0].RoomKey, rmres[i].id]
+    );
+    let status = JSON.parse(srmres[0].Status);
+    console.log(status.Status);
+
+    // console.log("rmres[i].FcmToken");
+    // console.log(rmres[i].FcmToken);
+    if (!rmres[i].FcmToken) return;
+    console.log(srmres[0].Status);
+    if (status.Status == "Online") return;
+    const fcmmessage = {
+      notification: {
+        // title: senderdatas.FullName,
+        title: "New message",
+        body: senderdatas.FullName + " sent you a message!",
+      },
+      token: rmres[i].FcmToken,
+      data: {
+        roomkey: roomkey,
+      },
+    };
+    admin
+      .messaging()
+      .send(fcmmessage)
+      .then((response) => {
+        console.log("Successfully sent message:", response);
+      })
+      .catch((error) => {
+        console.log("Error sending message:", error);
+      });
+  }
+}
+
+// const message = {
+//   notification: {
+//     title: "New message",
+//     body: "You have a new message from a ",
+//   },
+//   token: "dYmsSFxJTUuCJHmWc4_uhy:APA91bEoeFSJGJAEx_KOG9ICvYVLYeZfacg7Rwfabmt70z-EvKBNPjk4pk4l_DR2SvVJ_vZjWnYDKY_Z9ruJezOfgrpOUSBCiiUrw4-6Zz-RybpGG7llKF_5DZONL4vjThRsi7ApIHZm",
+// };
+
+// admin
+//   .messaging()
+//   .send(message)
+//   .then((res) => {
+//     console.log("Res", res);
+//   })
+//   .catch((err) => {
+//     console.log("Err", err);
+//   });
+
+// console.log(srmres);
+//     const payload = {
+//       notification: {
+//         title: senderdatas.FullName,
+//         body: message,
+//         image: imageurls,
+//         // click_action: "https://messengerinreact.herokuapp.com/chat/" + srmres[0].RoomKey,
+//       },
+//     };
+//     admin
+//       .messaging()
+//       .sendToDevice(rmres[i].FcmToken, payload)
+//       .then((response) => {
+//         console.log("Successfully sent message:", response);
+//       })
+//       .catch((error) => {
+//         console.log("Error sending message:", error);
+//       });
+
 async function getchats(myid) {
   const mysqlprom = require("mysql2/promise");
   const contprom = await mysqlprom.createConnection({
@@ -1228,17 +1416,22 @@ async function getchats(myid) {
     "SELECT rooms.id, rooms.RoomKey, rooms.Name, rooms.CoverURL AS AvatarURL FROM roommembers INNER JOIN rooms ON rooms.id=roommembers.RoomID WHERE UserID=?",
     [myid]
   );
-
+  // console.log("fres");
+  // console.log(fres);
   let datas = [];
   for (let i = 0; i < fres.length; i++) {
     const [srmres, srmerr] = await contprom.execute(
       "SELECT rooms.id, users.id AS UserID, users.Status AS Status, users.FullName AS Name, users.AvatarURL, rooms.RoomKey FROM roommembers INNER JOIN users ON roommembers.UserID=users.id INNER JOIN rooms ON rooms.id=roommembers.RoomID WHERE RoomID=? AND UserID!=?",
       [fres[i].id, myid]
     );
+    // console.log("srmres");
+    // console.log(srmres);
     const [slmres, slmerr] = await contprom.execute(
       "SELECT messages.Text, messages.ImageIDs, users.FullName, users.id AS UserID, messages.RoomID, messages.Date FROM `messages` INNER JOIN users ON messages.SenderID = users.id WHERE messages.RoomID = ? ORDER BY Date DESC LIMIT 1;",
       [fres[i].id]
     );
+    // console.log("slmres");
+    // console.log(slmres);
     if (srmres.length > 1) {
       //Group message
       fres[i].Notification = 0;
@@ -1252,6 +1445,7 @@ async function getchats(myid) {
           ImageIDs: slmres[0].ImageIDs,
         };
       }
+      // console.log(fres[i]);
       datas.push(fres[i]);
     } else {
       //Private message
@@ -1266,6 +1460,7 @@ async function getchats(myid) {
           ImageIDs: slmres[0].ImageIDs,
         };
       }
+      // console.log(srmres[0]);
       // srmres[0].Status = "Offline";
       datas.push(srmres[0]);
     }
@@ -1631,3 +1826,56 @@ function getIp(req) {
 // app.listen(port, () => {
 //   console.log("App listen on port", port);
 // });
+
+// const [fres, ferr] = await contprom.execute(
+//   "SELECT rooms.id, rooms.RoomKey, rooms.Name, rooms.CoverURL AS AvatarURL FROM roommembers INNER JOIN rooms ON rooms.id=roommembers.RoomID WHERE UserID=?",
+//   [myid]
+// );
+// // console.log("fres");
+// // console.log(fres);
+// let datas = [];
+// for (let i = 0; i < fres.length; i++) {
+//   const [srmres, srmerr] = await contprom.execute(
+//     "SELECT rooms.id, users.id AS UserID, users.Status AS Status, users.FullName AS Name, users.AvatarURL, rooms.RoomKey FROM roommembers INNER JOIN users ON roommembers.UserID=users.id INNER JOIN rooms ON rooms.id=roommembers.RoomID WHERE RoomID=? AND UserID!=?",
+//     [fres[i].id, myid]
+//   );
+//   // console.log("srmres");
+//   // console.log(srmres);
+//   const [slmres, slmerr] = await contprom.execute(
+//     "SELECT messages.Text, messages.ImageIDs, users.FullName, users.id AS UserID, messages.RoomID, messages.Date FROM `messages` INNER JOIN users ON messages.SenderID = users.id WHERE messages.RoomID = ? ORDER BY Date DESC LIMIT 1;",
+//     [fres[i].id]
+//   );
+//   // console.log("slmres");
+//   // console.log(slmres);
+//   if (srmres.length > 1) {
+//     //Group message
+//     fres[i].Notification = 0;
+//     fres[i].isGroup = true;
+//     if (slmres.length) {
+//       fres[i].LastMessage = {
+//         Text: slmres[0].Text,
+//         Date: slmres[0].Date,
+//         SenderID: slmres[0].UserID,
+//         SenderName: slmres[0].FullName,
+//         ImageIDs: slmres[0].ImageIDs,
+//       };
+//     }
+//     datas.push(fres[i]);
+//   } else {
+//     //Private message
+//     srmres[0].Notification = 0;
+//     srmres[0].isGroup = false;
+//     if (slmres.length) {
+//       srmres[0].LastMessage = {
+//         Text: slmres[0].Text,
+//         Date: slmres[0].Date,
+//         SenderID: slmres[0].UserID,
+//         SenderName: slmres[0].FullName,
+//         ImageIDs: slmres[0].ImageIDs,
+//       };
+//     }
+//     // console.log(srmres[0]);
+//     // srmres[0].Status = "Offline";
+//     datas.push(srmres[0]);
+//   }
+// }

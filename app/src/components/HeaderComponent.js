@@ -47,15 +47,10 @@ function HeaderComponent({ myid, avatar, partnername, status, partnerid }) {
       <div className="main-container-main">
         <div className="main-container-header-left">
           <div className="main-container-header-avatar-container">
-            <img
-              src={apiurl + "UsersProfileImg/" + avatar}
-              style={{ width: "75px", height: "75px", borderRadius: "50%" }}
-            />
+            <img src={apiurl + "UsersProfileImg/" + avatar} style={{ width: "75px", height: "75px", borderRadius: "50%" }} />
           </div>
           <div className="main-container-header-partner-datas">
-            <div className="main-container-header-partner-name">
-              {partnername}
-            </div>
+            <div className="main-container-header-partner-name">{partnername}</div>
             <div style={{ display: "flex", gap: 7 }}>
               {status && (
                 <>
@@ -74,18 +69,13 @@ function HeaderComponent({ myid, avatar, partnername, status, partnerid }) {
                       borderRadius: "50%",
                     }}
                   ></div>
-                  <div className="main-container-header-partner-status">
-                    {currentStatus}
-                  </div>
+                  <div className="main-container-header-partner-status">{currentStatus}</div>
                 </>
               )}
             </div>
           </div>
         </div>
-        <div
-          className="main-container-header-right"
-          style={{ position: "relative" }}
-        >
+        <div className="main-container-header-right" style={{ position: "relative" }}>
           <img src={telephone} style={{ cursor: "pointer" }} />
           <img src={camera} style={{ cursor: "pointer" }} />
           <div

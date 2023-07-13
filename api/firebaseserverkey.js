@@ -1,0 +1,3 @@
+const token = "AAAANCo886Q:APA91bE79GoQIF52oL-lvSfI2Tsd8OCap6IyjITnNdT9znVVGlHW43tt5f_LiJ05-uNlFgljumlx6jv6u29KM532jX0JcjAyyam_QozhTsmkl5pv8spg7buotsV2yFCgig-wRvOp4c__";
+
+module.exports = token;
