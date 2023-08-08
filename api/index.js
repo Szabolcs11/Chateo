@@ -80,48 +80,8 @@ const storage = multer.diskStorage({
 const upload = multer({ storage, limits: { fieldSize: 25 * 1024 * 1024 } });
 
 io.on("connection", (socket) => {
-  //   console.log(socket.id);
-
-  // socket.on("call", ({ userId, type }) => {
-  //   const remoteSocket = userSocketMap.get(userId);
-  //   if (!remoteSocket) {
-  //     socket.emit("call-failed", { message: "User is not online" });
-  //     return;
-  //   }
-  //   socket.to(remoteSocket).emit("call", { type, userId: socket.id });
-  // });
-
-  // socket.on("call-accepted", ({ callerId, signal, type }) => {
-  //   const callerSocketId = userSocketMap.get(callerId);
-  //   if (!callerSocketId) {
-  //     socket.emit("call-failed", { message: "Caller is not online" });
-  //     return;
-  //   }
-  //   socket.to(callerSocketId).emit("call-accepted", { signal, type });
-  // });
-
-  // socket.on("call-user", (data) => {
-  //   console.log(`Received call from ${socket.id} to ${data.to}`);
-
-  //   // Forward the "call-user" message to the target user
-  //   io.to(data.to).emit("call-made", {
-  //     offer: data.offer,
-  //     socket: socket.id,
-  //   });
-  // });
-
-  // // When a client sends an "answer-call" message, forward it to the caller
-  // socket.on("answer-call", (data) => {
-  //   console.log(`Received answer from ${socket.id} to ${data.socket}`);
-
-  //   // Forward the "answer-call" message to the caller
-  //   io.to(data.socket).emit("call-accepted", {
-  //     answer: data.answer,
-  //   });
-  // });
 
   socket.on("getroommessages", (RoomID, cb) => {
-    // console.log("kapom");
     connection.query(
       "SELECT users.id AS 'UserID', users.FullName, users.AvatarURL, messages.id AS 'MessageID', messages.SenderID, messages.Text, messages.RoomID, messages.Date, messages.ImageIDs FROM `messages` INNER JOIN users ON SenderID=users.id WHERE RoomID=? ORDER BY Date ASC",
       RoomID,
@@ -137,21 +97,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("joinroom", (roomKey, socketjoin, allroom, myid, runsocket, cb) => {
-    // console.log(myid);
     if (roomKey) {
-      // let allrm = [];
-      // allroom.forEach((e) => {
-      //   console.log(e);
-      //   allrm.push(e.RoomKey);
-      // });
-      // socket
-      //   .to(socket.AllRoom[i].RoomKey)
-      //   .emit("userdisconencted", "Offline", "Nev", socket.AllRoom[i].RoomKey);
-      // if (socket.rooms.has(roomKey)) {
-      //   console.log("Már benen vagyok a szobába");
-      // } else {
-      //   console.log("Nem vagyban benne a szobában");
-      // }
       socket.MyUserID = myid;
       // to all clients in room1 except the sender
       if (runsocket) {
@@ -165,13 +111,6 @@ io.on("connection", (socket) => {
         if (srres.length) {
           if (socketjoin) {
             socket.join(roomKey);
-            // if (!socket.rooms.has(roomKey)) {
-            //   // console.log("Joinol");
-            //   socket.leave(roomKey);
-            //   socket.join(roomKey);
-            // } else {
-            //   // console.log("Nem joinol");
-            // }
           }
           cb({ succes: true, message: "Succesfully joined the room" });
         }
@@ -183,7 +122,6 @@ io.on("connection", (socket) => {
 
   // Send messages
   socket.on("sendmessage", (roomKey, message, senderdatas, imageurls, cb) => {
-    // console.log(imageurls);
     if (roomKey && (message || imageurls)) {
       connection.query("SELECT * FROM rooms WHERE RoomKey=?", roomKey, function (srerr, srres) {
         if (srerr) throw srerr;
@@ -200,7 +138,6 @@ io.on("connection", (socket) => {
             SenderID: senderdatas.id,
             ImageIDs: imageurls.toString(),
           };
-          // console.log(messageinfo);
           let insertarr = {
             SenderID: senderdatas.id,
             Text: message,
@@ -210,11 +147,8 @@ io.on("connection", (socket) => {
           };
           connection.query("INSERT INTO messages SET ?", insertarr, function (imerr, imres) {
             if (imerr) throw imerr;
-            // Firebase things \\
             sendfirebasenotifications(roomKey, senderdatas, message, imageurls);
-            // End of Firebase things \\
             socket.to(roomKey).emit("recivemessage", messageinfo);
-            // console.log(messageinfo);
             cb({ succes: true, messagedatas: messageinfo });
           });
         } else {
@@ -229,8 +163,7 @@ io.on("connection", (socket) => {
   // Handle Status \\
 
   socket.on("updatestate", (status, FullName, cb) => {
-    // console.log("Leave");
-    // cb("asd");
+
   });
 
   socket.on("connect_error", (err) => {
@@ -246,9 +179,6 @@ io.on("connection", (socket) => {
   });
 
   socket.on("disconnect", (a) => {
-    // console.log("dc");
-    // console.log(getFullDate(), "dc");
-    // console.log(socket.MyUserID);
     if (socket.MyUserID) {
       let data = {
         Status: "Offline",
@@ -261,7 +191,6 @@ io.on("connection", (socket) => {
     if (socket.AllRoom) {
       for (let i = 0; i < socket.AllRoom.length; i++) {
         if (socket.AllRoom[i].UserID) {
-          // console.log("Privat", socket.AllRoom[i]);
           socket.to(socket.AllRoom[i].RoomKey).emit("userdisconencted", "Offline", "Nev", socket.AllRoom[i].RoomKey);
         }
       }
@@ -272,19 +201,6 @@ io.on("connection", (socket) => {
 });
 
 app.get("/", (req, res) => {
-  // const html = `
-  // <h1>Test</h1>
-  // `;
-  // const transported = nodemailer.createTransport({
-  //   host: "mail.openjavascript.info",
-  //   port: 465,
-  //   secure: true,
-  //   auth: {
-  //     user: "test@openjavascript.info",
-  //     pass: "test123",
-  //   },
-  // });
-
   res.send("Sziaa");
   const message = {
     notification: {
@@ -307,16 +223,6 @@ app.get("/", (req, res) => {
       console.log("Err", err);
     });
 });
-
-// Roomok amiben benen vagyok - SELECT rooms.id, rooms.RoomKey FROM roommembers INNER JOIN rooms ON roommembers.RoomID = rooms.id WHERE roommembers.UserID=1;
-
-// RoomKey alaplján a room tagok [UserID, Username, RoomKey] - SELECT roommembers.UserID, users.Username, rooms.RoomKey FROM roommembers, rooms, users WHERE rooms.RoomKey='123456' and rooms.id = roommembers.RoomID AND roommembers.UserID!=1 AND users.id = roommembers.UserID;
-
-// Roomonkent lekreni az uzenetet - SELECT messages.id, messages.SenderID, messages.Text, messages.RoomID FROM rooms, messages WHERE rooms.RoomKey='123456' AND rooms.id = messages.RoomID;
-
-// Roomok alapjan az uzenetek - SELECT * FROM messages INNER JOIN rooms ON rooms.id = messages.RoomID WHERE messages.SenderID=1;
-
-// SELECT rooms.id AS 'RoomID', rooms.RoomKey, messages.id, messages.SenderID, messages.Text, messages.RoomID, messages.Date FROM messages INNER JOIN rooms ON rooms.RoomKey =  WHERE rooms.RoomKey='123456';
 
 app.get("/verifyemail/:Token", (req, res) => {
   if (req.params.Token) {
@@ -496,14 +402,14 @@ app.post("/reset-password", async (req, res) => {
                   };
                   transporter.sendMail(message, (err, info) => {
                     console.log("Message sent: %s", info.messageId);
+                    if (err) {
+                      console.log("Error occurred. " + err.message);
+                      return process.exit(1);
+                    }
                     return res.status(200).json({
                       succes: true,
                       message: "Succesful registraion! You confirm email has been sent to your email address.",
                     });
-                    if (err) {
-                      console.log("Error occurred. " + err.message);
-                      // return process.exit(1);
-                    }
                   });
                   return res.status(200).json({
                     succes: true,
@@ -621,20 +527,15 @@ app.post("/Register", async (req, res) => {
             };
             transporter.sendMail(message, (err, info) => {
               console.log("Message sent: %s", info.messageId);
+              if (err) {
+                console.log("Error occurred. " + err.message);
+                return process.exit(1);
+              }
               return res.status(200).json({
                 succes: true,
                 message: "Succesful registraion! You confirm email has been sent to your email address.",
               });
-              if (err) {
-                console.log("Error occurred. " + err.message);
-                // return process.exit(1);
-              }
             });
-
-            // return res.status(200).json({
-            //   succes: true,
-            //   message: "Succesful registraion! You confirm email has been sent to your email address.",
-            // });
           }
         });
       }
@@ -1063,7 +964,6 @@ app.post("/changeuseravatar", (req, res) => {
   if (req.body.avatarurl && req.body.myid) {
     connection.query("UPDATE users SET AvatarURL=? WHERE id=?", [req.body.avatarurl, req.body.myid], function (uaerr, uares) {
       if (uaerr) throw uaerr;
-      // console.log(uares);
       return res.status(200).json({
         succes: true,
         message: "You've successfully changed your avatar!",
@@ -1236,7 +1136,6 @@ app.post("/getmyfriends", (req, res) => {
 });
 
 app.post("/creategroup", (req, res) => {
-  console.log(req.body);
   if (req.body.myid && req.body.Name && req.body.CoverURL && req.body.Persons) {
     let roomsinsert = {
       RoomKey: GenerateToken(6),
@@ -1294,9 +1193,6 @@ app.post("/creategroup", (req, res) => {
 });
 
 app.post("/upploadimage", upload.single("file"), async (req, res) => {
-  // console.log(req.file.filename);
-  console.log("Image upload");
-  console.log(req.file);
   let info = {
     Url: req.file.filename,
     Date: getFullDate(),
@@ -1314,8 +1210,6 @@ app.post("/upploadimage", upload.single("file"), async (req, res) => {
 });
 
 async function sendfirebasenotifications(roomkey, senderdatas, message, imageurls) {
-  console.log("sendfirebasenotifications");
-  // console.log(roomkey, senderdatas, message, imageurls);
   const mysqlprom = require("mysql2/promise");
   const contprom = await mysqlprom.createConnection({
     host: process.env.HOST,
@@ -1323,26 +1217,19 @@ async function sendfirebasenotifications(roomkey, senderdatas, message, imageurl
     database: process.env.DATABASE,
   });
   const [fres, ferr] = await contprom.execute("SELECT rooms.id, rooms.RoomKey, rooms.Name, rooms.CoverURL AS AvatarURL FROM rooms WHERE rooms.RoomKey=?", [roomkey]);
-  // console.log(fres);
   const [rmres, rmerr] = await contprom.execute(
     "SELECT users.id, users.FullName, users.FcmToken FROM rooms INNER JOIN roommembers ON roommembers.RoomID = rooms.id INNER JOIN users ON users.id = roommembers.UserID WHERE rooms.RoomKey=? AND users.id!=?",
     [fres[0].RoomKey, senderdatas.id]
   );
-  // console.log(rmres);
   // Needs to create the format.
-  // console.log(rmres);
   for (let i = 0; i < rmres.length; i++) {
     const [srmres, srmerr] = await contprom.execute(
       "SELECT rooms.id, users.id AS UserID, users.Status AS Status, users.FullName AS Name, users.AvatarURL, rooms.RoomKey FROM roommembers INNER JOIN users ON roommembers.UserID=users.id INNER JOIN rooms ON roommembers.RoomID=rooms.id WHERE rooms.RoomKey=? AND users.id=?",
       [fres[0].RoomKey, rmres[i].id]
     );
     let status = JSON.parse(srmres[0].Status);
-    console.log(status.Status);
 
-    // console.log("rmres[i].FcmToken");
-    // console.log(rmres[i].FcmToken);
     if (!rmres[i].FcmToken) return;
-    console.log(srmres[0].Status);
     if (status.Status == "Online") return;
     const fcmmessage = {
       notification: {
@@ -1367,43 +1254,6 @@ async function sendfirebasenotifications(roomkey, senderdatas, message, imageurl
   }
 }
 
-// const message = {
-//   notification: {
-//     title: "New message",
-//     body: "You have a new message from a ",
-//   },
-//   token: "dYmsSFxJTUuCJHmWc4_uhy:APA91bEoeFSJGJAEx_KOG9ICvYVLYeZfacg7Rwfabmt70z-EvKBNPjk4pk4l_DR2SvVJ_vZjWnYDKY_Z9ruJezOfgrpOUSBCiiUrw4-6Zz-RybpGG7llKF_5DZONL4vjThRsi7ApIHZm",
-// };
-
-// admin
-//   .messaging()
-//   .send(message)
-//   .then((res) => {
-//     console.log("Res", res);
-//   })
-//   .catch((err) => {
-//     console.log("Err", err);
-//   });
-
-// console.log(srmres);
-//     const payload = {
-//       notification: {
-//         title: senderdatas.FullName,
-//         body: message,
-//         image: imageurls,
-//         // click_action: "https://messengerinreact.herokuapp.com/chat/" + srmres[0].RoomKey,
-//       },
-//     };
-//     admin
-//       .messaging()
-//       .sendToDevice(rmres[i].FcmToken, payload)
-//       .then((response) => {
-//         console.log("Successfully sent message:", response);
-//       })
-//       .catch((error) => {
-//         console.log("Error sending message:", error);
-//       });
-
 async function getchats(myid) {
   const mysqlprom = require("mysql2/promise");
   const contprom = await mysqlprom.createConnection({
@@ -1417,22 +1267,16 @@ async function getchats(myid) {
     "SELECT rooms.id, rooms.RoomKey, rooms.Name, rooms.CoverURL AS AvatarURL FROM roommembers INNER JOIN rooms ON rooms.id=roommembers.RoomID WHERE UserID=?",
     [myid]
   );
-  // console.log("fres");
-  // console.log(fres);
   let datas = [];
   for (let i = 0; i < fres.length; i++) {
     const [srmres, srmerr] = await contprom.execute(
       "SELECT rooms.id, users.id AS UserID, users.Status AS Status, users.FullName AS Name, users.AvatarURL, rooms.RoomKey FROM roommembers INNER JOIN users ON roommembers.UserID=users.id INNER JOIN rooms ON rooms.id=roommembers.RoomID WHERE RoomID=? AND UserID!=?",
       [fres[i].id, myid]
     );
-    // console.log("srmres");
-    // console.log(srmres);
     const [slmres, slmerr] = await contprom.execute(
       "SELECT messages.Text, messages.ImageIDs, users.FullName, users.id AS UserID, messages.RoomID, messages.Date FROM `messages` INNER JOIN users ON messages.SenderID = users.id WHERE messages.RoomID = ? ORDER BY Date DESC LIMIT 1;",
       [fres[i].id]
     );
-    // console.log("slmres");
-    // console.log(slmres);
     if (srmres.length > 1) {
       //Group message
       fres[i].Notification = 0;
@@ -1446,7 +1290,6 @@ async function getchats(myid) {
           ImageIDs: slmres[0].ImageIDs,
         };
       }
-      // console.log(fres[i]);
       datas.push(fres[i]);
     } else {
       //Private message
@@ -1461,7 +1304,6 @@ async function getchats(myid) {
           ImageIDs: slmres[0].ImageIDs,
         };
       }
-      // console.log(srmres[0]);
       // srmres[0].Status = "Offline";
       datas.push(srmres[0]);
     }
@@ -1580,7 +1422,6 @@ function checkstatuses() {
   }, 15000);
 }
 
-// checkstatuses();
 
 // 2FA \\
 
@@ -1632,7 +1473,6 @@ app.post("/turnofftwofa", (req, res) => {
       if (suerr) throw suerr;
       if (sures.length) {
         let verified = verifytwofacode(req.body.key, sures[0].Secret);
-        console.log(verified);
         if (verified) {
           connection.query("UPDATE users SET Secret=? WHERE id=?", ["0", req.body.myid], function (uuerr, uures) {
             if (uuerr) throw uuerr;
@@ -1736,7 +1576,6 @@ app.post("/gettwofastatus", (req, res) => {
   if (req.body.myid) {
     connection.query("SELECT Secret FROM users WHERE id=?", req.body.myid, function (ssuerr, ssures) {
       if (ssuerr) throw ssuerr;
-      console.log(ssures[0].Secret);
       if (ssures[0].Secret != 0) {
         return res.status(200).json({
           succes: true,
@@ -1823,7 +1662,3 @@ function GenerateToken(length) {
 function getIp(req) {
   return req.connection.remoteAddress.replace("::ffff:", "");
 }
-
-// app.listen(port, () => {
-//   console.log("App listen on port", port);
-// });
