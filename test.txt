@@ -1,0 +1,13 @@
+    <LinearGradient
+      colors={["#291986", "#052799"]}
+      style={{ flex: 1 }}
+      angle={60}
+      locations={[0.4, 1]}
+      useAngle
+    >
+    import LinearGradient from "react-native-linear-gradient";
+    
+    
+    "react-native-vision-camera": "^2.15.4",
+        "react-native": "0.71.3",
+    "react-native-select-dropdown": "^3.2.1",
