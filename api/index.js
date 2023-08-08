@@ -62,7 +62,8 @@ const server = require("http").createServer(app);
 // app.use("/peerjs", ExpressPeerServer(server, opinions));
 const io = require("socket.io")(server, { cors: { origin: "*" } });
 
-server.listen(process.env.PORT, () => {
+// server.listen(process.env.PORT, () => {
+server.listen(process.env.PORT, "192.168.0.102", () => {
   console.log("Server running", process.env.PORT);
 });
 
@@ -1826,56 +1827,3 @@ function getIp(req) {
 // app.listen(port, () => {
 //   console.log("App listen on port", port);
 // });
-
-// const [fres, ferr] = await contprom.execute(
-//   "SELECT rooms.id, rooms.RoomKey, rooms.Name, rooms.CoverURL AS AvatarURL FROM roommembers INNER JOIN rooms ON rooms.id=roommembers.RoomID WHERE UserID=?",
-//   [myid]
-// );
-// // console.log("fres");
-// // console.log(fres);
-// let datas = [];
-// for (let i = 0; i < fres.length; i++) {
-//   const [srmres, srmerr] = await contprom.execute(
-//     "SELECT rooms.id, users.id AS UserID, users.Status AS Status, users.FullName AS Name, users.AvatarURL, rooms.RoomKey FROM roommembers INNER JOIN users ON roommembers.UserID=users.id INNER JOIN rooms ON rooms.id=roommembers.RoomID WHERE RoomID=? AND UserID!=?",
-//     [fres[i].id, myid]
-//   );
-//   // console.log("srmres");
-//   // console.log(srmres);
-//   const [slmres, slmerr] = await contprom.execute(
-//     "SELECT messages.Text, messages.ImageIDs, users.FullName, users.id AS UserID, messages.RoomID, messages.Date FROM `messages` INNER JOIN users ON messages.SenderID = users.id WHERE messages.RoomID = ? ORDER BY Date DESC LIMIT 1;",
-//     [fres[i].id]
-//   );
-//   // console.log("slmres");
-//   // console.log(slmres);
-//   if (srmres.length > 1) {
-//     //Group message
-//     fres[i].Notification = 0;
-//     fres[i].isGroup = true;
-//     if (slmres.length) {
-//       fres[i].LastMessage = {
-//         Text: slmres[0].Text,
-//         Date: slmres[0].Date,
-//         SenderID: slmres[0].UserID,
-//         SenderName: slmres[0].FullName,
-//         ImageIDs: slmres[0].ImageIDs,
-//       };
-//     }
-//     datas.push(fres[i]);
-//   } else {
-//     //Private message
-//     srmres[0].Notification = 0;
-//     srmres[0].isGroup = false;
-//     if (slmres.length) {
-//       srmres[0].LastMessage = {
-//         Text: slmres[0].Text,
-//         Date: slmres[0].Date,
-//         SenderID: slmres[0].UserID,
-//         SenderName: slmres[0].FullName,
-//         ImageIDs: slmres[0].ImageIDs,
-//       };
-//     }
-//     // console.log(srmres[0]);
-//     // srmres[0].Status = "Offline";
-//     datas.push(srmres[0]);
-//   }
-// }
