@@ -11,7 +11,7 @@ const { info } = require("console");
 
 // Firebase \\
 const admin = require("firebase-admin");
-const serviceAccount = require("./chateo-d1a4e-firebase-adminsdk-91dul-a521f0fa16.json");
+const serviceAccount = require("./chateo-d1a4e-firebase-adminsdk-91dul-5d9b24954f.json");
 const firebaseServerKey = require("./firebaseserverkey");
 
 admin.initializeApp({
@@ -34,6 +34,8 @@ const nodemailerconfig = nodemailer.createTransport({
   },
 });
 const transporter = nodemailer.createTransport(nodemailerconfig);
+
+console.log(process.env.APPURL);
 
 var corsOptions = {
   origin: process.env.APPURL,
@@ -214,6 +216,7 @@ io.on("connection", (socket) => {
             sendfirebasenotifications(roomKey, senderdatas, message, imageurls);
             // End of Firebase things \\
             socket.to(roomKey).emit("recivemessage", messageinfo);
+            console.log("recivemessage", roomKey, messageinfo);
             // console.log(messageinfo);
             cb({ succes: true, messagedatas: messageinfo });
           });
@@ -254,9 +257,13 @@ io.on("connection", (socket) => {
         Status: "Offline",
         LastUpdate: getFullDate(),
       };
-      connection.query("UPDATE users SET Status=? WHERE id=?", [JSON.stringify(data), socket.MyUserID], function (uuerr, uures) {
-        if (uuerr) throw uuerr;
-      });
+      connection.query(
+        "UPDATE users SET Status=? WHERE id=?",
+        [JSON.stringify(data), socket.MyUserID],
+        function (uuerr, uures) {
+          if (uuerr) throw uuerr;
+        }
+      );
     }
     if (socket.AllRoom) {
       for (let i = 0; i < socket.AllRoom.length; i++) {
@@ -286,26 +293,27 @@ app.get("/", (req, res) => {
   // });
 
   res.send("Sziaa");
-  const message = {
-    notification: {
-      title: "New message",
-      body: "You have a new message from a ",
-    },
-    data: {
-      roomkey: "Py0DGz",
-    },
-    token: "fLzgoi5mTHGml7tiXSC4gA:APA91bFNC5ntsDHOhQgcnKzMopwdl-CGRklsjOXOkBfhyGPtN1UdkkaBcKFg7suyL8oMmU-rhASfSY9TJYbU8lCtAZ6VfSlDawEA7GeZ7e4JwhHq8UTPf9U6Hg4MtMruBP0PryKJOBEp",
-  };
+  // const message = {
+  //   notification: {
+  //     title: "New message",
+  //     body: "You have a new message from a ",
+  //   },
+  //   data: {
+  //     roomkey: "Py0DGz",
+  //   },
+  //   token:
+  //     "fLzgoi5mTHGml7tiXSC4gA:APA91bFNC5ntsDHOhQgcnKzMopwdl-CGRklsjOXOkBfhyGPtN1UdkkaBcKFg7suyL8oMmU-rhASfSY9TJYbU8lCtAZ6VfSlDawEA7GeZ7e4JwhHq8UTPf9U6Hg4MtMruBP0PryKJOBEp",
+  // };
 
-  admin
-    .messaging()
-    .send(message)
-    .then((res) => {
-      console.log("Res", res);
-    })
-    .catch((err) => {
-      console.log("Err", err);
-    });
+  // admin
+  //   .messaging()
+  //   .send(message)
+  //   .then((res) => {
+  //     console.log("Res", res);
+  //   })
+  //   .catch((err) => {
+  //     console.log("Err", err);
+  //   });
 });
 
 // Roomok amiben benen vagyok - SELECT rooms.id, rooms.RoomKey FROM roommembers INNER JOIN rooms ON roommembers.RoomID = rooms.id WHERE roommembers.UserID=1;
@@ -466,51 +474,55 @@ app.post("/reset-password", async (req, res) => {
           function (ferr, fres) {
             if (ferr) throw ferr;
             if (fres.length) {
-              connection.query("UPDATE users SET Password=? WHERE id=?", [hashedPassword, fres[0].UserID], function (uperr, upres) {
-                if (uperr) throw uperr;
-                connection.query("DELETE FROM forgotpasswords WHERE Token=?", req.body.Token, function (derr, dres) {
-                  if (derr) throw derr;
-                  // Your password has been reseted emal
-                  const config = {
-                    service: "gmail",
-                    auth: {
-                      user: process.env.GMAILUSERNAME,
-                      pass: process.env.GMAILPASSWORD,
-                    },
-                  };
+              connection.query(
+                "UPDATE users SET Password=? WHERE id=?",
+                [hashedPassword, fres[0].UserID],
+                function (uperr, upres) {
+                  if (uperr) throw uperr;
+                  connection.query("DELETE FROM forgotpasswords WHERE Token=?", req.body.Token, function (derr, dres) {
+                    if (derr) throw derr;
+                    // Your password has been reseted emal
+                    const config = {
+                      service: "gmail",
+                      auth: {
+                        user: process.env.GMAILUSERNAME,
+                        pass: process.env.GMAILPASSWORD,
+                      },
+                    };
 
-                  const transporter = nodemailer.createTransport(config);
+                    const transporter = nodemailer.createTransport(config);
 
-                  let body = `
+                    let body = `
                 <div style="border: 1px solid black">
                   <p>Your password has been resetted</p>
                   <p>FullName: ${fres[0].FullName}</p>
                   <p>Date: ${getFullDate()}</p>
                 </div>
                 `;
-                  let message = {
-                    from: "kokeny.szabolcs04@gmail.com",
-                    to: fres[0].Email,
-                    subject: "Your password has been resetted",
-                    html: body,
-                  };
-                  transporter.sendMail(message, (err, info) => {
-                    console.log("Message sent: %s", info.messageId);
+                    let message = {
+                      from: "kokeny.szabolcs04@gmail.com",
+                      to: fres[0].Email,
+                      subject: "Your password has been resetted",
+                      html: body,
+                    };
+                    transporter.sendMail(message, (err, info) => {
+                      console.log("Message sent: %s", info.messageId);
+                      return res.status(200).json({
+                        succes: true,
+                        message: "Succesful registraion! You confirm email has been sent to your email address.",
+                      });
+                      if (err) {
+                        console.log("Error occurred. " + err.message);
+                        // return process.exit(1);
+                      }
+                    });
                     return res.status(200).json({
                       succes: true,
-                      message: "Succesful registraion! You confirm email has been sent to your email address.",
+                      message: "Succesful Password Reset!",
                     });
-                    if (err) {
-                      console.log("Error occurred. " + err.message);
-                      // return process.exit(1);
-                    }
                   });
-                  return res.status(200).json({
-                    succes: true,
-                    message: "Succesful Password Reset!",
-                  });
-                });
-              });
+                }
+              );
             } else {
               return res.status(200).json({
                 succes: false,
@@ -668,15 +680,19 @@ app.post("/login", (req, res) => {
                     Status: "Online",
                     LastUpdate: getFullDate(),
                   };
-                  connection.query("UPDATE users SET Status=? WHERE id=?", [JSON.stringify(data), sures[0].id], function (uuerr, uures) {
-                    if (uuerr) throw uuerr;
-                    return res.status(200).json({
-                      succes: true,
-                      message: "Succesful Login!",
-                      token: info.Token,
-                      user: sures[0],
-                    });
-                  });
+                  connection.query(
+                    "UPDATE users SET Status=? WHERE id=?",
+                    [JSON.stringify(data), sures[0].id],
+                    function (uuerr, uures) {
+                      if (uuerr) throw uuerr;
+                      return res.status(200).json({
+                        succes: true,
+                        message: "Succesful Login!",
+                        token: info.Token,
+                        user: sures[0],
+                      });
+                    }
+                  );
                 });
               } else {
                 // Ha van 2FA
@@ -735,14 +751,18 @@ app.post("/authenticate", (req, res) => {
             Status: "Online",
             LastUpdate: getFullDate(),
           };
-          connection.query("UPDATE users SET Status=? WHERE id=?", [JSON.stringify(data), ssres[0].id], function (uuerr, uures) {
-            if (uuerr) throw uuerr;
-            return res.status(200).json({
-              succes: true,
-              message: "Succesful Token validation",
-              user: ssres[0],
-            });
-          });
+          connection.query(
+            "UPDATE users SET Status=? WHERE id=?",
+            [JSON.stringify(data), ssres[0].id],
+            function (uuerr, uures) {
+              if (uuerr) throw uuerr;
+              return res.status(200).json({
+                succes: true,
+                message: "Succesful Token validation",
+                user: ssres[0],
+              });
+            }
+          );
         } else {
           res.status(200).json({
             succes: false,
@@ -772,20 +792,24 @@ app.post("/getfriends", async (req, res) => {
 
 app.post("/getallfriends", (req, res) => {
   if (req.body.myid) {
-    connection.query("SELECT friends.FriendID as id, users.FullName, users.AvatarURL FROM friends, users WHERE UserID=? AND users.id = friends.FriendID;", req.body.myid, function (suerr, sures) {
-      if (suerr) throw suerr;
-      if (sures.length) {
-        return res.status(200).json({
-          succes: true,
-          friends: sures,
-        });
-      } else {
-        return res.status(200).json({
-          success: false,
-          friends: [],
-        });
+    connection.query(
+      "SELECT friends.FriendID as id, users.FullName, users.AvatarURL FROM friends, users WHERE UserID=? AND users.id = friends.FriendID;",
+      req.body.myid,
+      function (suerr, sures) {
+        if (suerr) throw suerr;
+        if (sures.length) {
+          return res.status(200).json({
+            succes: true,
+            friends: sures,
+          });
+        } else {
+          return res.status(200).json({
+            success: false,
+            friends: [],
+          });
+        }
       }
-    });
+    );
   } else {
     return res.status(200).json({
       success: false,
@@ -796,20 +820,24 @@ app.post("/getallfriends", (req, res) => {
 
 app.post("/getalluser", (req, res) => {
   if (req.body.myid) {
-    connection.query("SELECT users.id, users.FullName, users.AvatarURL FROM users WHERE users.id!=?", req.body.myid, function (suerr, sures) {
-      if (suerr) throw suerr;
-      if (sures.length) {
-        return res.status(200).json({
-          succes: true,
-          users: sures,
-        });
-      } else {
-        return res.status(200).json({
-          success: true,
-          users: [],
-        });
+    connection.query(
+      "SELECT users.id, users.FullName, users.AvatarURL FROM users WHERE users.id!=?",
+      req.body.myid,
+      function (suerr, sures) {
+        if (suerr) throw suerr;
+        if (sures.length) {
+          return res.status(200).json({
+            succes: true,
+            users: sures,
+          });
+        } else {
+          return res.status(200).json({
+            success: true,
+            users: [],
+          });
+        }
       }
-    });
+    );
   } else {
     return res.status(200).json({
       success: false,
@@ -824,14 +852,18 @@ app.post("/getuser", (req, res) => {
     connection.query("SELECT * FROM users WHERE users.id=?", req.body.userid, function (suerr, sures) {
       if (suerr) throw suerr;
       if (sures.length) {
-        connection.query("SELECT * FROM friends WHERE UserID=? AND FriendID=?", [req.body.myid, req.body.userid], function (sferr, sfres) {
-          if (sferr) throw sferr;
-          return res.status(200).json({
-            succes: true,
-            user: sures[0],
-            ismyfriend: Boolean(sfres.length),
-          });
-        });
+        connection.query(
+          "SELECT * FROM friends WHERE UserID=? AND FriendID=?",
+          [req.body.myid, req.body.userid],
+          function (sferr, sfres) {
+            if (sferr) throw sferr;
+            return res.status(200).json({
+              succes: true,
+              user: sures[0],
+              ismyfriend: Boolean(sfres.length),
+            });
+          }
+        );
       } else {
         return res.status(200).json({
           success: false,
@@ -868,15 +900,19 @@ app.post("/getonlinefriends", async (req, res) => {
 
 app.post("/getallusers", (req, res) => {
   if (req.body.myid) {
-    connection.query("SELECT id, FullName, Email, AvatarURL FROM `users` WHERE id!=?", req.body.myid, function (suerr, sures) {
-      if (suerr) throw suerr;
-      if (sures.length) {
-        return res.status(200).json({
-          succes: true,
-          users: sures,
-        });
+    connection.query(
+      "SELECT id, FullName, Email, AvatarURL FROM `users` WHERE id!=?",
+      req.body.myid,
+      function (suerr, sures) {
+        if (suerr) throw suerr;
+        if (sures.length) {
+          return res.status(200).json({
+            succes: true,
+            users: sures,
+          });
+        }
       }
-    });
+    );
   } else {
     return res.status(200).json({
       succes: false,
@@ -886,20 +922,24 @@ app.post("/getallusers", (req, res) => {
 
 app.post("/getincomingfriendrequest", (req, res) => {
   if (req.body.myid) {
-    connection.query("SELECT * FROM pendingfriendrequests INNER JOIN users ON UserID=users.id WHERE TargetID=?", req.body.myid, function (sperr, spres) {
-      if (sperr) throw sperr;
-      if (spres.length > 0) {
-        return res.status(200).json({
-          succes: true,
-          users: spres,
-        });
-      } else {
-        return res.status(200).json({
-          succes: true,
-          users: [],
-        });
+    connection.query(
+      "SELECT * FROM pendingfriendrequests INNER JOIN users ON UserID=users.id WHERE TargetID=?",
+      req.body.myid,
+      function (sperr, spres) {
+        if (sperr) throw sperr;
+        if (spres.length > 0) {
+          return res.status(200).json({
+            succes: true,
+            users: spres,
+          });
+        } else {
+          return res.status(200).json({
+            succes: true,
+            users: [],
+          });
+        }
       }
-    });
+    );
   } else {
     return res.status(200).json({
       succes: false,
@@ -910,55 +950,67 @@ app.post("/getincomingfriendrequest", (req, res) => {
 app.post("/addfriend", (req, res) => {
   if (req.body.myid && req.body.targetid) {
     //Ha már én küldtem neki
-    connection.query("SELECT * FROM `pendingfriendrequests` WHERE UserID=? AND TargetID=?", [req.body.myid, req.body.targetid], function (sperr, spres) {
-      if (sperr) throw sperr;
-      if (spres.length > 0) {
-        return res.status(200).json({
-          succes: false,
-          message: "You have already sent a friend request to the user!",
-        });
-      } else {
-        connection.query("SELECT * FROM `pendingfriendrequests` WHERE UserID=? AND TargetID=?", [req.body.targetid, req.body.myid], function (spferr, spfres) {
-          if (spferr) throw spferr;
-          if (spfres.length > 0) {
-            return res.status(200).json({
-              succes: false,
-              message: "The user has already sent you a friend request!",
-            });
-          } else {
-            connection.query("SELECT * FROM `friends` WHERE UserID=? AND FriendID=?", [req.body.myid, req.body.targetid], function (sferr, sfres) {
-              if (sferr) throw sferr;
-              if (sfres.length > 0) {
+    connection.query(
+      "SELECT * FROM `pendingfriendrequests` WHERE UserID=? AND TargetID=?",
+      [req.body.myid, req.body.targetid],
+      function (sperr, spres) {
+        if (sperr) throw sperr;
+        if (spres.length > 0) {
+          return res.status(200).json({
+            succes: false,
+            message: "You have already sent a friend request to the user!",
+          });
+        } else {
+          connection.query(
+            "SELECT * FROM `pendingfriendrequests` WHERE UserID=? AND TargetID=?",
+            [req.body.targetid, req.body.myid],
+            function (spferr, spfres) {
+              if (spferr) throw spferr;
+              if (spfres.length > 0) {
                 return res.status(200).json({
                   succes: false,
-                  message: "The user is already on your friends list!",
+                  message: "The user has already sent you a friend request!",
                 });
               } else {
-                let info = {
-                  UserID: req.body.myid,
-                  TargetID: req.body.targetid,
-                  Date: getFullDate(),
-                };
-                connection.query("INSERT INTO pendingfriendrequests SET ?", info, function (iperr, ipres) {
-                  if (iperr) throw iperr;
-                  if (ipres.insertId) {
-                    return res.status(200).json({
-                      succes: true,
-                      message: "You have successfully sent a friend request",
-                    });
-                  } else {
-                    return res.status(200).json({
-                      succes: false,
-                      message: "Unexpected error!",
-                    });
+                connection.query(
+                  "SELECT * FROM `friends` WHERE UserID=? AND FriendID=?",
+                  [req.body.myid, req.body.targetid],
+                  function (sferr, sfres) {
+                    if (sferr) throw sferr;
+                    if (sfres.length > 0) {
+                      return res.status(200).json({
+                        succes: false,
+                        message: "The user is already on your friends list!",
+                      });
+                    } else {
+                      let info = {
+                        UserID: req.body.myid,
+                        TargetID: req.body.targetid,
+                        Date: getFullDate(),
+                      };
+                      connection.query("INSERT INTO pendingfriendrequests SET ?", info, function (iperr, ipres) {
+                        if (iperr) throw iperr;
+                        if (ipres.insertId) {
+                          return res.status(200).json({
+                            succes: true,
+                            message: "You have successfully sent a friend request",
+                          });
+                        } else {
+                          return res.status(200).json({
+                            succes: false,
+                            message: "Unexpected error!",
+                          });
+                        }
+                      });
+                    }
                   }
-                });
+                );
               }
-            });
-          }
-        });
+            }
+          );
+        }
       }
-    });
+    );
     //Ha ő már küldött nekem
 
     // Ha már a barátod a user
@@ -972,84 +1024,92 @@ app.post("/addfriend", (req, res) => {
 app.post("/handlefriendrequest", (req, res) => {
   if (req.body.myid && req.body.data) {
     if (req.body.data.accepted) {
-      connection.query("SELECT * FROM pendingfriendrequests WHERE TargetID=? AND UserID=?", [req.body.myid, req.body.data.id], function (sperr, spres) {
-        if (sperr) throw sperr;
-        if (spres.length) {
-          connection.query("DELETE FROM pendingfriendrequests WHERE id=?", spres[0].id, function (dperr, dpres) {
-            if (dperr) throw dperr;
-            let info = {
-              UserID: req.body.myid,
-              FriendID: spres[0].UserID,
-              Date: getFullDate(),
-            };
-            let revinfo = {
-              UserID: spres[0].UserID,
-              FriendID: req.body.myid,
-              Date: getFullDate(),
-            };
-            connection.query("INSERT INTO friends SET ?", info, function (iferr, ifres) {
-              if (iferr) throw iferr;
-              connection.query("INSERT INTO friends SET ?", revinfo, function (ifferr, iffres) {
-                if (ifferr) throw ifferr;
-                let rminfo = {
-                  RoomKey: GenerateToken(6),
-                  Date: getFullDate(),
-                };
-                connection.query("INSERT INTO rooms SET ?", rminfo, function (irerr, irres) {
-                  if (irerr) throw irerr;
-                  if (irres.insertId) {
-                    let rm = {
-                      RoomID: irres.insertId,
-                      UserID: req.body.myid,
-                    };
-                    let rmrev = {
-                      RoomID: irres.insertId,
-                      UserID: spres[0].UserID,
-                    };
-                    connection.query("INSERT INTO roommembers SET ?", rm, function (irmerr, irmres) {
-                      if (irmerr) throw irmerr;
-                      if (irmres.insertId) {
-                        connection.query("INSERT INTO roommembers SET ?", rmrev, function (irmmerr, irmmres) {
-                          if (irmmerr) throw irmmerr;
-                          if (irmmres.insertId) {
-                            return res.status(200).json({
-                              succes: true,
-                              message: "You have successfully accepted the friend request!",
-                            });
-                          }
-                        });
-                      }
-                    });
-                  }
+      connection.query(
+        "SELECT * FROM pendingfriendrequests WHERE TargetID=? AND UserID=?",
+        [req.body.myid, req.body.data.id],
+        function (sperr, spres) {
+          if (sperr) throw sperr;
+          if (spres.length) {
+            connection.query("DELETE FROM pendingfriendrequests WHERE id=?", spres[0].id, function (dperr, dpres) {
+              if (dperr) throw dperr;
+              let info = {
+                UserID: req.body.myid,
+                FriendID: spres[0].UserID,
+                Date: getFullDate(),
+              };
+              let revinfo = {
+                UserID: spres[0].UserID,
+                FriendID: req.body.myid,
+                Date: getFullDate(),
+              };
+              connection.query("INSERT INTO friends SET ?", info, function (iferr, ifres) {
+                if (iferr) throw iferr;
+                connection.query("INSERT INTO friends SET ?", revinfo, function (ifferr, iffres) {
+                  if (ifferr) throw ifferr;
+                  let rminfo = {
+                    RoomKey: GenerateToken(6),
+                    Date: getFullDate(),
+                  };
+                  connection.query("INSERT INTO rooms SET ?", rminfo, function (irerr, irres) {
+                    if (irerr) throw irerr;
+                    if (irres.insertId) {
+                      let rm = {
+                        RoomID: irres.insertId,
+                        UserID: req.body.myid,
+                      };
+                      let rmrev = {
+                        RoomID: irres.insertId,
+                        UserID: spres[0].UserID,
+                      };
+                      connection.query("INSERT INTO roommembers SET ?", rm, function (irmerr, irmres) {
+                        if (irmerr) throw irmerr;
+                        if (irmres.insertId) {
+                          connection.query("INSERT INTO roommembers SET ?", rmrev, function (irmmerr, irmmres) {
+                            if (irmmerr) throw irmmerr;
+                            if (irmmres.insertId) {
+                              return res.status(200).json({
+                                succes: true,
+                                message: "You have successfully accepted the friend request!",
+                              });
+                            }
+                          });
+                        }
+                      });
+                    }
+                  });
                 });
               });
             });
-          });
-        } else {
-          return res.status(200).json({
-            succes: false,
-            message: "Unexpected error!",
-          });
-        }
-      });
-    } else {
-      connection.query("SELECT * FROM pendingfriendrequests WHERE TargetID=? AND UserID=?", [req.body.myid, req.body.data.id], function (sperr, spres) {
-        if (sperr) throw sperr;
-        if (spres.length) {
-          connection.query("DELETE FROM pendingfriendrequests WHERE id=?", spres[0].id, function (dperr, dpres) {
-            if (dperr) throw dperr;
+          } else {
             return res.status(200).json({
-              succes: true,
-              message: "You successfully declined the friend request!",
+              succes: false,
+              message: "Unexpected error!",
             });
-          });
-        } else {
-          return res.status(200).json({
-            succes: false,
-            message: "Unexpected error!",
-          });
+          }
         }
-      });
+      );
+    } else {
+      connection.query(
+        "SELECT * FROM pendingfriendrequests WHERE TargetID=? AND UserID=?",
+        [req.body.myid, req.body.data.id],
+        function (sperr, spres) {
+          if (sperr) throw sperr;
+          if (spres.length) {
+            connection.query("DELETE FROM pendingfriendrequests WHERE id=?", spres[0].id, function (dperr, dpres) {
+              if (dperr) throw dperr;
+              return res.status(200).json({
+                succes: true,
+                message: "You successfully declined the friend request!",
+              });
+            });
+          } else {
+            return res.status(200).json({
+              succes: false,
+              message: "Unexpected error!",
+            });
+          }
+        }
+      );
     }
   } else {
     return res.status(200).json({
@@ -1061,14 +1121,18 @@ app.post("/handlefriendrequest", (req, res) => {
 
 app.post("/changeuseravatar", (req, res) => {
   if (req.body.avatarurl && req.body.myid) {
-    connection.query("UPDATE users SET AvatarURL=? WHERE id=?", [req.body.avatarurl, req.body.myid], function (uaerr, uares) {
-      if (uaerr) throw uaerr;
-      // console.log(uares);
-      return res.status(200).json({
-        succes: true,
-        message: "You've successfully changed your avatar!",
-      });
-    });
+    connection.query(
+      "UPDATE users SET AvatarURL=? WHERE id=?",
+      [req.body.avatarurl, req.body.myid],
+      function (uaerr, uares) {
+        if (uaerr) throw uaerr;
+        // console.log(uares);
+        return res.status(200).json({
+          succes: true,
+          message: "You've successfully changed your avatar!",
+        });
+      }
+    );
   } else {
     return res.status(200).json({
       succes: false,
@@ -1091,13 +1155,17 @@ app.post("/changepassword", async (req, res) => {
         if (sures.length) {
           bcrypt.compare(req.body.currpass, sures[0].Password, function async(err, isMath) {
             if (isMath) {
-              connection.query("UPDATE users SET Password=? WHERE id=?", [hasdhedPassword, req.body.myid], function (userr, usres) {
-                if (userr) throw userr;
-                return res.status(200).json({
-                  succes: true,
-                  message: "You have successfully changed your password!",
-                });
-              });
+              connection.query(
+                "UPDATE users SET Password=? WHERE id=?",
+                [hasdhedPassword, req.body.myid],
+                function (userr, usres) {
+                  if (userr) throw userr;
+                  return res.status(200).json({
+                    succes: true,
+                    message: "You have successfully changed your password!",
+                  });
+                }
+              );
             } else {
               return res.status(200).json({
                 succes: false,
@@ -1118,6 +1186,27 @@ app.post("/changepassword", async (req, res) => {
     return res.status(200).json({
       succes: false,
       message: "Need data!",
+    });
+  }
+});
+
+app.post("/updatefcmtoken", (req, res) => {
+  if (req.body.myid && req.body.fcmtoken) {
+    connection.query(
+      "UPDATE users SET FcmToken=? WHERE id=?",
+      [req.body.fcmtoken, req.body.myid],
+      function (uferr, ufres) {
+        if (uferr) throw uferr;
+        return res.status(200).json({
+          succes: true,
+          message: "You have successfully updated your FCM Token!",
+        });
+      }
+    );
+  } else {
+    return res.status(200).json({
+      succes: false,
+      message: "Unexpected error!",
     });
   }
 });
@@ -1213,20 +1302,24 @@ app.post("/logout", (req, res) => {
 
 app.post("/getmyfriends", (req, res) => {
   if (req.body.myid) {
-    connection.query("SELECT users.id, users.FullName, users.AvatarURL FROM friends INNER JOIN users ON users.id=friends.FriendID WHERE UserID=?", req.body.myid, function (sferr, sfres) {
-      if (sferr) throw sferr;
-      if (sfres.length) {
-        return res.status(200).json({
-          succes: true,
-          friends: sfres,
-        });
-      } else {
-        return res.status(200).json({
-          succes: true,
-          friends: [],
-        });
+    connection.query(
+      "SELECT users.id, users.FullName, users.AvatarURL FROM friends INNER JOIN users ON users.id=friends.FriendID WHERE UserID=?",
+      req.body.myid,
+      function (sferr, sfres) {
+        if (sferr) throw sferr;
+        if (sfres.length) {
+          return res.status(200).json({
+            succes: true,
+            friends: sfres,
+          });
+        } else {
+          return res.status(200).json({
+            succes: true,
+            friends: [],
+          });
+        }
       }
-    });
+    );
   } else {
     return res.status(200).json({
       succes: false,
@@ -1322,7 +1415,10 @@ async function sendfirebasenotifications(roomkey, senderdatas, message, imageurl
     user: process.env.USER,
     database: process.env.DATABASE,
   });
-  const [fres, ferr] = await contprom.execute("SELECT rooms.id, rooms.RoomKey, rooms.Name, rooms.CoverURL AS AvatarURL FROM rooms WHERE rooms.RoomKey=?", [roomkey]);
+  const [fres, ferr] = await contprom.execute(
+    "SELECT rooms.id, rooms.RoomKey, rooms.Name, rooms.CoverURL AS AvatarURL FROM rooms WHERE rooms.RoomKey=?",
+    [roomkey]
+  );
   // console.log(fres);
   const [rmres, rmerr] = await contprom.execute(
     "SELECT users.id, users.FullName, users.FcmToken FROM rooms INNER JOIN roommembers ON roommembers.RoomID = rooms.id INNER JOIN users ON users.id = roommembers.UserID WHERE rooms.RoomKey=? AND users.id!=?",
@@ -1341,7 +1437,9 @@ async function sendfirebasenotifications(roomkey, senderdatas, message, imageurl
 
     // console.log("rmres[i].FcmToken");
     // console.log(rmres[i].FcmToken);
+    console.log("elotte");
     if (!rmres[i].FcmToken) return;
+    console.log("utana");
     console.log(srmres[0].Status);
     if (status.Status == "Online") return;
     const fcmmessage = {
@@ -1355,6 +1453,7 @@ async function sendfirebasenotifications(roomkey, senderdatas, message, imageurl
         roomkey: roomkey,
       },
     };
+    console.log(fcmmessage);
     admin
       .messaging()
       .send(fcmmessage)
@@ -1479,7 +1578,10 @@ async function getfriendandrooms(myid) {
   });
 
   let returndata = [];
-  const [fres, ferr] = await contprom.execute("SELECT friends.UserID, friends.FriendID, users.FullName, users.AvatarURL FROM friends, users WHERE UserID=? AND users.id = friends.FriendID", [myid]);
+  const [fres, ferr] = await contprom.execute(
+    "SELECT friends.UserID, friends.FriendID, users.FullName, users.AvatarURL FROM friends, users WHERE UserID=? AND users.id = friends.FriendID",
+    [myid]
+  );
 
   const [myrmres, myrmerr] = await contprom.execute("SELECT * FROM roommembers WHERE UserID=?", [myid]);
   for (let k = 0; k < fres.length; k++) {
@@ -1557,9 +1659,13 @@ function checkstatuses() {
                 Status: "Offline",
                 LastUpdate: currentdate,
               };
-              connection.query("UPDATE users SET Status=? WHERE id=?", [JSON.stringify(info), sures[i].id], function (userr, usres) {
-                if (userr) throw userr;
-              });
+              connection.query(
+                "UPDATE users SET Status=? WHERE id=?",
+                [JSON.stringify(info), sures[i].id],
+                function (userr, usres) {
+                  if (userr) throw userr;
+                }
+              );
             }
           }
           if (elapsedtime > 60000) {
@@ -1568,9 +1674,13 @@ function checkstatuses() {
                 Status: "Away",
                 LastUpdate: currentdate,
               };
-              connection.query("UPDATE users SET Status=? WHERE id=?", [JSON.stringify(info), sures[i].id], function (userr, usres) {
-                if (userr) throw userr;
-              });
+              connection.query(
+                "UPDATE users SET Status=? WHERE id=?",
+                [JSON.stringify(info), sures[i].id],
+                function (userr, usres) {
+                  if (userr) throw userr;
+                }
+              );
             }
           }
         }
@@ -1605,13 +1715,17 @@ app.post("/turnontwofa", (req, res) => {
   if (req.body.key && req.body.secret && req.body.myid) {
     let verified = verifytwofacode(req.body.key, req.body.secret);
     if (verified) {
-      connection.query("UPDATE users SET Secret=? WHERE id=?", [req.body.secret, req.body.myid], function (uuerr, uures) {
-        if (uuerr) throw uuerr;
-        return res.status(200).json({
-          succes: true,
-          message: "Succesful activation!",
-        });
-      });
+      connection.query(
+        "UPDATE users SET Secret=? WHERE id=?",
+        [req.body.secret, req.body.myid],
+        function (uuerr, uures) {
+          if (uuerr) throw uuerr;
+          return res.status(200).json({
+            succes: true,
+            message: "Succesful activation!",
+          });
+        }
+      );
     } else {
       return res.status(200).json({
         succes: false,
@@ -1679,18 +1793,22 @@ app.post("/verifytwofa", (req, res) => {
                   Status: "Online",
                   LastUpdate: getFullDate(),
                 };
-                connection.query("UPDATE users SET Status=? WHERE id=?", [JSON.stringify(data), sures[0].id], function (uuerr, uures) {
-                  if (uuerr) throw uuerr;
-                  connection.query("DELETE FROM twofalogins WHERE Token=?", req.body.key, function (dterr, dtres) {
-                    if (dterr) throw dterr;
-                    return res.status(200).json({
-                      succes: true,
-                      message: "Succesful Login!",
-                      token: info.Token,
-                      user: sures[0],
+                connection.query(
+                  "UPDATE users SET Status=? WHERE id=?",
+                  [JSON.stringify(data), sures[0].id],
+                  function (uuerr, uures) {
+                    if (uuerr) throw uuerr;
+                    connection.query("DELETE FROM twofalogins WHERE Token=?", req.body.key, function (dterr, dtres) {
+                      if (dterr) throw dterr;
+                      return res.status(200).json({
+                        succes: true,
+                        message: "Succesful Login!",
+                        token: info.Token,
+                        user: sures[0],
+                      });
                     });
-                  });
-                });
+                  }
+                );
               });
             } else {
               return res.status(200).json({
@@ -1762,17 +1880,25 @@ app.post("/deletefriend", async (req, res) => {
   if (req.body.myid && req.body.partnerid) {
     const result = await handledeletefriend(req.body.myid, req.body.partnerid);
     if (result) {
-      connection.query("DELETE FROM friends WHERE UserID=? AND FriendID=?", [req.body.myid, req.body.partnerid], function (dferr, dfres) {
-        if (dferr) throw dferr;
-        connection.query("DELETE FROM friends WHERE UserID=? AND FriendID=?", [req.body.partnerid, req.body.myid], function (dferr, dfres) {
+      connection.query(
+        "DELETE FROM friends WHERE UserID=? AND FriendID=?",
+        [req.body.myid, req.body.partnerid],
+        function (dferr, dfres) {
           if (dferr) throw dferr;
-          return res.status(200).json({
-            succes: true,
-            message: "Succesfully deleted the friend!",
-            friendid: req.body.partnerid,
-          });
-        });
-      });
+          connection.query(
+            "DELETE FROM friends WHERE UserID=? AND FriendID=?",
+            [req.body.partnerid, req.body.myid],
+            function (dferr, dfres) {
+              if (dferr) throw dferr;
+              return res.status(200).json({
+                succes: true,
+                message: "Succesfully deleted the friend!",
+                friendid: req.body.partnerid,
+              });
+            }
+          );
+        }
+      );
     }
   } else {
     return res.status(200).json({
@@ -1793,10 +1919,10 @@ async function handledeletefriend(myid, friendid) {
 
   const [mysrres, mrsrerr] = await contprom.execute("SELECT * FROM roommembers WHERE UserID=?", [myid]);
   for (let i = 0; i < mysrres.length; i++) {
-    const [fsrres, fsrerr] = await contprom.execute("SELECT roommembers.id, RoomID, UserID, rooms.Name FROM roommembers INNER JOIN rooms ON RoomID=rooms.id WHERE RoomID=? AND UserID=?", [
-      mysrres[i].RoomID,
-      friendid,
-    ]);
+    const [fsrres, fsrerr] = await contprom.execute(
+      "SELECT roommembers.id, RoomID, UserID, rooms.Name FROM roommembers INNER JOIN rooms ON RoomID=rooms.id WHERE RoomID=? AND UserID=?",
+      [mysrres[i].RoomID, friendid]
+    );
     if (fsrres.length) {
       if (fsrres[0].Name == "") {
         const [drmres, drmerr] = await contprom.execute("DELETE FROM roommembers WHERE RoomID=?", [fsrres[0].RoomID]);
@@ -1809,7 +1935,19 @@ async function handledeletefriend(myid, friendid) {
 // Useful functions \\
 function getFullDate() {
   var today = new Date();
-  return today.getFullYear() + "-" + (today.getMonth() + 1) + "-" + today.getDate() + " " + today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+  return (
+    today.getFullYear() +
+    "-" +
+    (today.getMonth() + 1) +
+    "-" +
+    today.getDate() +
+    " " +
+    today.getHours() +
+    ":" +
+    today.getMinutes() +
+    ":" +
+    today.getSeconds()
+  );
 }
 
 function GenerateToken(length) {
