@@ -39,7 +39,16 @@
     "succces.createdHelpRequest": "Help Request successfully sent!",
     "errors.selfreport": "Can't use this function to your own vehicle",
     "errors.need_vehicle": "You need to have a vehicle registered to use this function.",
-    "user.not_found": "User not found"
+    "user.not_found": "User not found",
+    "friendRequest.notFound": "Friend request not found.",
+    "friendRequest.cannotSendToSelf": "You cannot send a friend request to yourself.",
+    "friendRequest.alreadyFriends": "You are already friends with this user.",
+    "friendRequest.alreadyPending": "A pending friend request already exists between these users.",
+    "friendRequest.noLongerPending": "This friend request is no longer pending.",
+    "success.friendRequestCreated": "Friend request sent successfully.",
+    "success.friendRequestAccepted": "Friend request accepted successfully.",
+    "success.friendRequestRejected": "Friend request rejected successfully.",
+    "success.friendRequestCancelled": "Friend request cancelled successfully."
   },
   "sr": {
     "errors.validation.failed": "Validacija nije uspela.",
@@ -81,7 +90,16 @@
     "succces.createdHelpRequest": "Help Request successfully sent!",
     "errors.selfreport": "Can't use this function to your own vehicle",
     "errors.need_vehicle": "You need to have a vehicle registered to use this function.",
-    "user.not_found": "User not found"
+    "user.not_found": "User not found",
+    "friendRequest.notFound": "Friend request not found.",
+    "friendRequest.cannotSendToSelf": "Ne mozes poslati zahtev za prijateljstvo samom sebi.",
+    "friendRequest.alreadyFriends": "Vec ste prijatelji sa ovim korisnikom.",
+    "friendRequest.alreadyPending": "Vec postoji zahtev za prijateljstvo na cekanju izmedju ovih korisnika.",
+    "friendRequest.noLongerPending": "Ovaj zahtev za prijateljstvo vise nije na cekanju.",
+    "success.friendRequestCreated": "Zahtev za prijateljstvo je uspesno poslat.",
+    "success.friendRequestAccepted": "Zahtev za prijateljstvo je uspesno prihvacen.",
+    "success.friendRequestRejected": "Zahtev za prijateljstvo je uspesno odbijen.",
+    "success.friendRequestCancelled": "Zahtev za prijateljstvo je uspesno otkazan."
   },
   "hu": {
     "errors.validation.failed": "A validacio sikertelen.",
@@ -123,6 +141,15 @@
     "succces.createdHelpRequest": "Segítségkérés sikeresen elküldve!",
     "errors.selfreport": "Nem használhatod ezt a funkciót a saját járművedre!",
     "errors.need_vehicle": "A funkció használatához regisztrálnod kell egy járművet.",
-    "user.not_found": "Felhasználó nem található"
+    "user.not_found": "Felhasználó nem található",
+    "friendRequest.notFound": "Az ismerősnek jelölés nem található.",
+    "friendRequest.cannotSendToSelf": "Nem küldhetsz ismerősnek jelölést magadnak.",
+    "friendRequest.alreadyFriends": "Már barátok vagytok ezzel a felhasználóval.",
+    "friendRequest.alreadyPending": "Már létezik függőben lévő ismerősnek jelölés a felhasználók között.",
+    "friendRequest.noLongerPending": "Ez az ismerősnek jelölés már nem függőben van.",
+    "success.friendRequestCreated": "Az ismerősnek jelölés sikeresen elküldve.",
+    "success.friendRequestAccepted": "Az ismerősnek jelölés sikeresen elfogadva.",
+    "success.friendRequestRejected": "Az ismerősnek jelölés sikeresen elutasítva.",
+    "success.friendRequestCancelled": "Az ismerősnek jelölés sikeresen visszavonva."
   }
 }
